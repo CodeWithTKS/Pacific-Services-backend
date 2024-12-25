@@ -19,10 +19,16 @@ app.use(cors({
 app.use(bodyParser.json());
 
 const authRoutes = require('./routes/authRoutes');
+const commissionRoutes = require('./routes/commissionRoutes');
+const moneyTransferRoutes = require('./routes/moneyTransferRoutes');
+const portalRoutes = require('./routes/portalRoutes');
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/commission', commissionRoutes);
+app.use('/api/moneyTransfer', moneyTransferRoutes);
+app.use('/api/portal', portalRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
