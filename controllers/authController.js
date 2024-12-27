@@ -2,20 +2,19 @@ const authService = require('../services/authService');
 
 const userLogin = async (req, res) => {
     try {
-        const { username, roleId, password } = req.body;  // Accept username, roleId, and password directly
+        const { email, password_hash } = req.body;
         const loginData = {
-            username,
-            roleId,
-            password
+            email,
+            password_hash
         };
 
         const userLogin = await authService.userLogin(loginData);
-        res.status(200).json({ message: 'Login successful', data: userLogin });
-    } catch (error) {
+        res.status(200).json({ message: 'Login successful', Data: userLogin });
+    }
+    catch (error) {
         res.status(500).json({ error: error.message });
     }
-};
-
+}
 const modifyPassword = async (req, res) => {
     try {
         const { email, password_hash, newpassword } = req.body;

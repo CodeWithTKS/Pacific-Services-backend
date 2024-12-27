@@ -84,7 +84,11 @@ const getCommissionById = async (commissionId) => {
 
 // Get all commissions
 const getAllCommissions = async () => {
-    const query = 'SELECT * FROM commission';
+    const query = `
+        SELECT commission.*, portals.Name AS portalName
+        FROM commission 
+        JOIN portals ON commission.portalId = portals.PortalID 
+    `;
 
     return new Promise((resolve, reject) => {
         dbconnection.query(query, (error, results) => {

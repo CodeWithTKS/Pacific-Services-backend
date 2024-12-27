@@ -9,18 +9,18 @@ const addPortal = async (portalData) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
-        portalData.Name,
-        portalData.Code,
-        portalData.ContactNo,
-        portalData.ContactPerson || null,
-        portalData.Email || null,
-        portalData.Fax || null,
-        portalData.ACNo,
-        portalData.Balance || 0.00,
-        portalData.TransactionLimit || 0.00,
-        portalData.ServiceTax || 0,
-        portalData.TDSRate || 0.00,
-        portalData.OpeningBalanceDate
+        portalData.name,
+        portalData.code,
+        portalData.contactNo,
+        portalData.contactPerson || null,
+        portalData.email || null,
+        portalData.fax || null,
+        portalData.acNo,
+        portalData.balance || 0.00,
+        portalData.transactionLimit || 0.00,
+        portalData.serviceTax || 0,
+        portalData.tdsRate || 0.00,
+        portalData.openingBalanceDate
     ];
 
     return new Promise((resolve, reject) => {
@@ -40,18 +40,18 @@ const updatePortal = async (portalId, portalData) => {
         WHERE PortalID = ?`;
 
     const values = [
-        portalData.Name,
-        portalData.Code,
-        portalData.ContactNo,
-        portalData.ContactPerson || null,
-        portalData.Email || null,
-        portalData.Fax || null,
-        portalData.ACNo,
-        portalData.Balance || 0.00,
-        portalData.TransactionLimit || 0.00,
-        portalData.ServiceTax || 0,
-        portalData.TDSRate || 0.00,
-        portalData.OpeningBalanceDate,
+        portalData.name,
+        portalData.code,
+        portalData.contactNo,
+        portalData.contactPerson || null,
+        portalData.email || null,
+        portalData.fax || null,
+        portalData.acNo,
+        portalData.balance || 0.00,
+        portalData.transactionLimit || 0.00,
+        portalData.serviceTax || 0,
+        portalData.tdsRate || 0.00,
+        portalData.openingBalanceDate,
         portalId
     ];
 

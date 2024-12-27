@@ -6,67 +6,39 @@ const jwtSecretKey = "HELLOKRUPALSINH"; // Use environment variable
 // Login function
 const userLogin = async (loginData) => {
     try {
-        const { username, roleId, password } = loginData;
+        const { email, password_hash } = loginData;
 
-        if (!username || !roleId || !password) {
-            throw new Error('Username, roleId, and password are required');
+        if (!email || !password_hash) {
+            throw new Error('Both email and password are required');
         }
 
-        // Fetch user by username from the database
-        const user = await getUserByUsername(username);
+        const user = await getUserByemail(email);
         if (!user) {
             throw new Error('Invalid credentials');
         }
 
-        // Check if the password exists in the user data
-        if (!user.Password) {
+        if (!user.password) {
             throw new Error('Password not found in user data');
         }
 
-        // Compare the provided password with the stored password
-        if (user.Password !== password) {
+        const passwordMatch = await bcrypt.compare(password_hash, user.password);
+        if (!passwordMatch) {
             throw new Error('Invalid credentials');
         }
 
-        // Check if the roleId matches the one stored in the database
-        if (user.RoleId !== roleId) {
-            throw new Error('Invalid role');
-        }
-
-        // Generate a token (JWT) with user details including the roleId
-        const token = jwt.sign(
-            { user: user},
-            jwtSecretKey,
-            { expiresIn: '1h' }
-        );
+        const token = jwt.sign({ userId: user.id, email: user.email }, jwtSecretKey, { expiresIn: '1h' });
+        // await addLastLogin(user.email);
 
         return {
             token,
             message: 'Login successful',
-            user: {
-                user:user
-            },
-            authdata: token,
+            user: user
         };
     } catch (error) {
         console.error("Login error:", error.message);
         throw error;
     }
 };
-
-
-// Get user by username
-const getUserByUsername = (username) => {
-    return new Promise((resolve, reject) => {
-        dbconnection.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
-            if (err) {
-                return reject(err); // Handle query errors
-            }
-            resolve(results[0] || null); // Return the first user or null if not found
-        });
-    });
-};
-
 
 // Get user by email
 const getUserByemail = (email) => {
