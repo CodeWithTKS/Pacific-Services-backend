@@ -139,5 +139,4 @@ const addUserToLoginTable = (email, passwordHash, role) => {
     });
 };
 
-
 module.exports = { userLogin, modifyPassword, createUserService };

@@ -23,6 +23,18 @@ const updatePortal = async (req, res) => {
     }
 };
 
+// Update a portal by ID
+const updateBalancePortal = async (req, res) => {
+    try {
+        const portalId = req.params.id;
+        const portalData = req.body;
+        const result = await portalService.updateBalancePortal(portalId, portalData);
+        res.status(200).json({ message: 'Portal updated successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Delete a portal by ID
 const deletePortal = async (req, res) => {
     try {
@@ -55,10 +67,21 @@ const getAllPortals = async (req, res) => {
     }
 };
 
+const getPortalStats = async (req, res) => {
+    try {
+        const result = await portalService.getPortalStats();
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     addPortal,
     updatePortal,
     deletePortal,
     getPortalById,
-    getAllPortals
+    getAllPortals,
+    updateBalancePortal,
+    getPortalStats
 };

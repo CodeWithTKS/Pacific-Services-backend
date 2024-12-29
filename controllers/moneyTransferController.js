@@ -45,11 +45,45 @@ const getMoneyTransferById = async (req, res) => {
     }
 };
 
+// Update a money transfer no by ID
+const updateTransactionNo = async (req, res) => {
+    try {
+        const transferId = req.params.id;
+        const { TransactionNo } = req.body;
+        const result = await moneyTransferService.updateTransactionNo
+            (transferId, TransactionNo);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Get all money transfers
 const getAllMoneyTransfers = async (req, res) => {
     try {
-        const result = await moneyTransferService.getAllMoneyTransfers();
+        // Extract query parameters
+        const { fromDate, toDate, portalId } = req.query;
+
+        // Call the service with optional date and portalId parameters
+        const result = await moneyTransferService.getAllMoneyTransfers(fromDate, toDate, portalId);
+
         res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getTotalCashController = async (req, res) => {
+    try {
+        const [totalWithTransaction, overallTotal] = await Promise.all([
+            moneyTransferService.getTotalCashWithTransactionNo(),
+            moneyTransferService.getOverallTotalCash()
+        ]);
+
+        res.status(200).json({
+            totalWithTransaction: totalWithTransaction.totalCashSum || 0,
+            overallTotal: overallTotal.overallTotalCash || 0
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -60,5 +94,7 @@ module.exports = {
     updateMoneyTransfer,
     deleteMoneyTransfer,
     getMoneyTransferById,
-    getAllMoneyTransfers
+    getAllMoneyTransfers,
+    updateTransactionNo,
+    getTotalCashController
 };

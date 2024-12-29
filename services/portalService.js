@@ -63,6 +63,22 @@ const updatePortal = async (portalId, portalData) => {
     });
 };
 
+const updateBalancePortal = async (portalId, portalData) => {
+    const query = `UPDATE portals SET Balance = ? WHERE PortalID = ?`;
+
+    const values = [
+        portalData.Balance || 0.00, // Use "Balance" as in the request payload
+        portalId
+    ];
+
+    return new Promise((resolve, reject) => {
+        dbconnection.query(query, values, (error, results) => {
+            if (error) return reject(error);
+            resolve({ affectedRows: results.affectedRows });
+        });
+    });
+};
+
 // Delete a portal by ID
 const deletePortal = async (portalId) => {
     const query = 'DELETE FROM portals WHERE PortalID = ?';
@@ -99,10 +115,29 @@ const getAllPortals = async () => {
     });
 };
 
+// Get Portal Status
+const getPortalStats = async () => {
+    const query = `
+        SELECT 
+            COUNT(*) AS totalPortals, 
+            SUM(Balance) AS totalBalance 
+        FROM portals;
+    `;
+
+    return new Promise((resolve, reject) => {
+        dbconnection.query(query, (error, results) => {
+            if (error) return reject(error);
+            resolve(results[0]); // Return the first result row
+        });
+    });
+};
+
 module.exports = {
     addPortal,
     updatePortal,
     deletePortal,
     getPortalById,
-    getAllPortals
+    getAllPortals,
+    updateBalancePortal,
+    getPortalStats
 };
