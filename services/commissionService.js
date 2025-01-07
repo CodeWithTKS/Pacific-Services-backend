@@ -3,9 +3,9 @@ const dbconnection = require('../config/database');
 // Add a new commission
 const addCommission = async (commissionData) => {
     const query = `
-        INSERT INTO commission (portalId, FromAmount, ToAmount, BankType, Amount, Percentage, PacificType, 
+        INSERT INTO commission (portalId, FromAmount, ToAmount, BankType, Amount, Percentage, 
                                 PacificFixedAmount, PacificAmount, PacificExtraAmount, CommissionType)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
         commissionData.portalId,
         commissionData.FromAmount,
@@ -13,7 +13,6 @@ const addCommission = async (commissionData) => {
         commissionData.BankType || null,
         commissionData.Amount,
         commissionData.Percentage || null,
-        commissionData.PacificType || null,
         commissionData.PacificFixedAmount || 0.00,
         commissionData.PacificAmount || 0.00,
         commissionData.PacificExtraAmount || 0.00,
@@ -32,7 +31,7 @@ const addCommission = async (commissionData) => {
 const updateCommission = async (commissionId, commissionData) => {
     const query = `
         UPDATE commission 
-        SET portalId = ?, FromAmount = ?, ToAmount = ?, BankType = ?, Amount = ?, Percentage = ?, PacificType = ?, 
+        SET portalId = ?, FromAmount = ?, ToAmount = ?, BankType = ?, Amount = ?, Percentage = ?,
             PacificFixedAmount = ?, PacificAmount = ?, PacificExtraAmount = ?, CommissionType = ? 
         WHERE CommissionID = ?`;
     const values = [
@@ -42,7 +41,6 @@ const updateCommission = async (commissionId, commissionData) => {
         commissionData.BankType || null,
         commissionData.Amount,
         commissionData.Percentage || null,
-        commissionData.PacificType || null,
         commissionData.PacificFixedAmount || 0.00,
         commissionData.PacificAmount || 0.00,
         commissionData.PacificExtraAmount || 0.00,

@@ -11,6 +11,17 @@ const addPortal = async (req, res) => {
     }
 };
 
+// Portal Logs
+const addPortalLog = async (req, res) => {
+    try {
+        const portalData = req.body;
+        const result = await portalService.addPortalLog(portalData);
+        res.status(201).json({ message: 'Portal logs added successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Update a portal by ID
 const updatePortal = async (req, res) => {
     try {
@@ -57,6 +68,16 @@ const getPortalById = async (req, res) => {
     }
 };
 
+const getPortalLogsById = async (req, res) => {
+    try {
+        const portalId = req.params.id;
+        const result = await portalService.getPortalLogsById(portalId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Get all portals
 const getAllPortals = async (req, res) => {
     try {
@@ -83,5 +104,7 @@ module.exports = {
     getPortalById,
     getAllPortals,
     updateBalancePortal,
-    getPortalStats
+    getPortalStats,
+    addPortalLog,
+    getPortalLogsById
 };

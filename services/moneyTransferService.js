@@ -4,21 +4,19 @@ const dbconnection = require('../config/database');
 const addMoneyTransfer = async (transferData) => {
     const query = `
         INSERT INTO moneytransfer 
-        (portalId, ACNo, LastName, TransactionType, Type, FirstName, ContactNo, IFSCNo, HighlightEntry, 
-        Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, SalasarFixedAmt, 
-        BankCharge, SalasarCharge, SalasarExtra, BankDeposit, CustDeposit)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        (portalId, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
+        Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, FixedAmt, 
+        BankCharge, Extra, BankDeposit, CustDeposit)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
         transferData.ACNo,
         transferData.LastName || null,
-        transferData.TransactionType,
-        transferData.Type || null,
+        transferData.TransactionDate,
         transferData.FirstName,
         transferData.ContactNo,
         transferData.IFSCNo || null,
-        transferData.HighlightEntry || 0,
         transferData.Cash1 || 0,
         transferData.Cash500 || 0,
         transferData.Cash100 || 0,
@@ -28,10 +26,9 @@ const addMoneyTransfer = async (transferData) => {
         transferData.Cash5 || 0,
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
-        transferData.SalasarFixedAmt || 0.00,
+        transferData.FixedAmt || 0.00,
         transferData.BankCharge || 0.00,
-        transferData.SalasarCharge || 0.00,
-        transferData.SalasarExtra || 0.00,
+        transferData.Extra || 0.00,
         transferData.BankDeposit || 0.00,
         transferData.CustDeposit || 0.00
     ];
@@ -48,22 +45,20 @@ const addMoneyTransfer = async (transferData) => {
 const updateMoneyTransfer = async (transferId, transferData) => {
     const query = `
         UPDATE moneytransfer 
-        SET portalId = ?, ACNo = ?, LastName = ?, TransactionType = ?, Type = ?, FirstName = ?, 
-        ContactNo = ?, IFSCNo = ?, HighlightEntry = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
-        Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, SalasarFixedAmt = ?, BankCharge = ?, SalasarCharge = ?, 
-        SalasarExtra = ?, BankDeposit = ?, CustDeposit = ? 
+        SET portalId = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
+        ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
+        Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, FixedAmt = ?, BankCharge = ?,
+        Extra = ?, BankDeposit = ?, CustDeposit = ? 
         WHERE TransferID = ?`;
 
     const values = [
         transferData.portalId,
         transferData.ACNo,
         transferData.LastName || null,
-        transferData.TransactionType,
-        transferData.Type || null,
+        transferData.TransactionDate,
         transferData.FirstName,
         transferData.ContactNo,
         transferData.IFSCNo || null,
-        transferData.HighlightEntry || 0,
         transferData.Cash1 || 0,
         transferData.Cash500 || 0,
         transferData.Cash100 || 0,
@@ -73,10 +68,9 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.Cash5 || 0,
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
-        transferData.SalasarFixedAmt || 0.00,
+        transferData.FixedAmt || 0.00,
         transferData.BankCharge || 0.00,
-        transferData.SalasarCharge || 0.00,
-        transferData.SalasarExtra || 0.00,
+        transferData.Extra || 0.00,
         transferData.BankDeposit || 0.00,
         transferData.CustDeposit || 0.00,
         transferId
@@ -98,7 +92,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Step 1: Get TotalCash and portalId from moneytransfer table
         const query1 = `
-            SELECT TotalCash, portalId
+            SELECT BankDeposit, portalId
             FROM moneytransfer
             WHERE TransferID = ?`;
 
@@ -117,8 +111,8 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        const { TotalCash, portalId } = result1;
-        console.log('TotalCash:', TotalCash, 'portalId:', portalId);
+        const { BankDeposit, portalId } = result1;
+        console.log('BankDeposit:', BankDeposit, 'portalId:', portalId);
 
         // Step 2: Get the current balance from the portals table
         const query2 = `
@@ -144,19 +138,31 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const { balance } = result2;
         console.log('Current balance:', balance);
 
-        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract TotalCash
+        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract BankDeposit
         if (balance === null || balance === undefined) {
             return Promise.reject(new Error('No balance found in the portal'));
         }
 
         // Check if the balance is sufficient
-        if (balance < TotalCash) {
+        if (balance < BankDeposit) {
             return Promise.reject(new Error('Insufficient balance in the portal'));
         }
 
         // Step 4: Calculate the new balance and update it
-        const newBalance = balance - TotalCash;
+        const newBalance = balance - BankDeposit;
         console.log('New balance:', newBalance);
+
+        // Prepare log data
+        const logData = {
+            portalId: portalId,
+            beforeBalance: balance, // Initial balance before any transaction
+            balance: BankDeposit,
+            type: 'Remove Balance',
+            afterBalance: newBalance,
+            createdAt: new Date()
+        };
+
+        await addPortalLog(logData);
 
         // Update the portals table with the new balance
         const query3 = `
@@ -206,7 +212,29 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         throw error;
     }
 };
+// Portal Logs
+const addPortalLog = async (logData) => {
+    const query = `
+        INSERT INTO portal_logs 
+        (portal_id, before_balance, balance, type, after_balance, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?)`;
 
+    const values = [
+        logData.portalId,
+        logData.beforeBalance,
+        logData.balance,
+        logData.type,
+        logData.afterBalance,
+        logData.createdAt || new Date()
+    ];
+
+    return new Promise((resolve, reject) => {
+        dbconnection.query(query, values, (error, results) => {
+            if (error) return reject(error);
+            resolve({ LogID: results.insertId });
+        });
+    });
+};
 // Delete a money transfer by ID
 const deleteMoneyTransfer = async (transferId) => {
     const query = 'DELETE FROM moneytransfer WHERE TransferID = ?';

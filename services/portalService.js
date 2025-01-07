@@ -1,12 +1,12 @@
 const dbconnection = require('../config/database');
 
-// Add a new portal
+// add Portal
 const addPortal = async (portalData) => {
     const query = `
         INSERT INTO portals 
-        (Name, Code, ContactNo, ContactPerson, Email, Fax, ACNo, Balance, TransactionLimit, ServiceTax, 
+        (Name, Code, ContactNo, ContactPerson, Email, ACNo, Balance, TransactionLimit, ServiceTax, 
         TDSRate, OpeningBalanceDate)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         portalData.name,
@@ -14,7 +14,6 @@ const addPortal = async (portalData) => {
         portalData.contactNo,
         portalData.contactPerson || null,
         portalData.email || null,
-        portalData.fax || null,
         portalData.acNo,
         portalData.balance || 0.00,
         portalData.transactionLimit || 0.00,
@@ -24,9 +23,55 @@ const addPortal = async (portalData) => {
     ];
 
     return new Promise((resolve, reject) => {
+        dbconnection.query(query, values, async (error, results) => {
+            if (error) return reject(error);
+
+            const portalId = results.insertId;
+            const initialBalance = portalData.balance || 0.00;
+
+            // Prepare log data
+            const logData = {
+                portalId: portalId,
+                beforeBalance: 0.00, // Initial balance before any transaction
+                balance: initialBalance,
+                type: 'Add Balance',
+                afterBalance: initialBalance,
+                createdAt: new Date()
+            };
+
+            try {
+                // Add portal log
+                const logResult = await addPortalLog(logData);
+                resolve({ PortalID: portalId, LogID: logResult.LogID });
+            } catch (logError) {
+                // If logging fails, return an error but keep the portal insertion
+                console.error("Failed to add portal log:", logError);
+                reject(logError);
+            }
+        });
+    });
+};
+
+// Portal Logs
+const addPortalLog = async (logData) => {
+    const query = `
+        INSERT INTO portal_logs 
+        (portal_id, before_balance, balance, type, after_balance, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?)`;
+
+    const values = [
+        logData.portalId,
+        logData.beforeBalance,
+        logData.balance,
+        logData.type,
+        logData.afterBalance,
+        logData.createdAt || new Date()
+    ];
+
+    return new Promise((resolve, reject) => {
         dbconnection.query(query, values, (error, results) => {
             if (error) return reject(error);
-            resolve({ PortalID: results.insertId });
+            resolve({ LogID: results.insertId });
         });
     });
 };
@@ -35,7 +80,7 @@ const addPortal = async (portalData) => {
 const updatePortal = async (portalId, portalData) => {
     const query = `
         UPDATE portals 
-        SET Name = ?, Code = ?, ContactNo = ?, ContactPerson = ?, Email = ?, Fax = ?, ACNo = ?, Balance = ?, 
+        SET Name = ?, Code = ?, ContactNo = ?, ContactPerson = ?, Email = ?, ACNo = ?, Balance = ?, 
         TransactionLimit = ?, ServiceTax = ?, TDSRate = ?, OpeningBalanceDate = ?
         WHERE PortalID = ?`;
 
@@ -45,7 +90,6 @@ const updatePortal = async (portalId, portalData) => {
         portalData.contactNo,
         portalData.contactPerson || null,
         portalData.email || null,
-        portalData.fax || null,
         portalData.acNo,
         portalData.balance || 0.00,
         portalData.transactionLimit || 0.00,
@@ -103,6 +147,21 @@ const getPortalById = async (portalId) => {
     });
 };
 
+const getPortalLogsById = async (portalId) => {
+    const query = `SELECT portal_logs.*, portals.Name AS portalName
+    FROM portal_logs 
+    JOIN portals ON portal_logs.portal_id = portals.PortalID
+    WHERE portal_logs.portal_id = ?
+    ORDER BY portal_logs.createdAt DESC`;
+    
+    return new Promise((resolve, reject) => {
+        dbconnection.query(query, [portalId], (error, results) => {
+            if (error) return reject(error);
+            resolve(results || null);
+        });
+    });
+};
+
 // Get all portals
 const getAllPortals = async () => {
     const query = 'SELECT * FROM portals';
@@ -139,5 +198,7 @@ module.exports = {
     getPortalById,
     getAllPortals,
     updateBalancePortal,
-    getPortalStats
+    getPortalStats,
+    addPortalLog,
+    getPortalLogsById
 };
