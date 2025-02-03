@@ -122,6 +122,39 @@ INSERT INTO `moneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `ACNo`, 
 -- --------------------------------------------------------
 
 --
+-- Dumping data for table `AEPSmoneytransfer`
+--
+CREATE TABLE `aepsmoneytransfer` (
+  `TransferID` int(11) NOT NULL,
+  `TransactionNo` varchar(50) DEFAULT NULL,
+  `portalId` varchar(255) NOT NULL,
+  `ACNo` varchar(50) NOT NULL,
+  `LastName` varchar(255) DEFAULT NULL,
+  `TransactionDate` datetime NOT NULL,
+  `TransactionType` varchar(255) NOT NULL,
+  `OtherType` varchar(255),
+  `OtherName` varchar(255),
+  `FirstName` varchar(255) NOT NULL,
+  `ContactNo` varchar(20) NOT NULL,
+  `IFSCNo` varchar(20) DEFAULT NULL,
+  `Cash500` int(11) DEFAULT 0,
+  `Cash100` int(11) DEFAULT 0,
+  `Cash50` int(11) DEFAULT 0,
+  `Cash20` int(11) DEFAULT 0,
+  `Cash10` int(11) DEFAULT 0,
+  `Cash5` int(11) DEFAULT 0,
+  `Cash1` int(11) DEFAULT 0,
+  `TotalCash` decimal(15,2) DEFAULT 0.00,
+  `CollectionAmt` decimal(15,2) DEFAULT 0.00,
+  `FixedAmt` decimal(15,2) DEFAULT 0.00,
+  `BankCharge` decimal(15,2) DEFAULT 0.00,
+  `Extra` decimal(15,2) DEFAULT 0.00,
+  `BankDeposit` decimal(15,2) DEFAULT 0.00,
+  `CustDeposit` decimal(15,2) DEFAULT 0.00,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
 -- Table structure for table `portals`
 --
 

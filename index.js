@@ -22,6 +22,7 @@ const authRoutes = require('./routes/authRoutes');
 const commissionRoutes = require('./routes/commissionRoutes');
 const moneyTransferRoutes = require('./routes/moneyTransferRoutes');
 const portalRoutes = require('./routes/portalRoutes');
+const aepsRoutes = require('./routes/aepsmoneytransferRoutes');
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/commission', commissionRoutes);
 app.use('/api/moneyTransfer', moneyTransferRoutes);
 app.use('/api/portal', portalRoutes);
+app.use('/api/aeps', aepsRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

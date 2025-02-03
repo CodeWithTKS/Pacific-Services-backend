@@ -3,10 +3,10 @@ const dbconnection = require('../config/database');
 // Add a new money transfer
 const addMoneyTransfer = async (transferData) => {
     const query = `
-        INSERT INTO moneytransfer 
+        INSERT INTO aepsmoneytransfer 
         (portalId, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
-        Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, FixedAmt, 
-        BankCharge, Extra, BankDeposit, CustDeposit)
+        Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, 
+        Extra, CustDeposit, TransactionType, OtherType, OtherName)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
@@ -26,11 +26,11 @@ const addMoneyTransfer = async (transferData) => {
         transferData.Cash5 || 0,
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
-        transferData.FixedAmt || 0.00,
-        transferData.BankCharge || 0.00,
         transferData.Extra || 0.00,
-        transferData.BankDeposit || 0.00,
-        transferData.CustDeposit || 0.00
+        transferData.CustDeposit || 0.00,
+        transferData.TransactionType || null,
+        transferData.OtherType || null,
+        transferData.OtherName || null,
     ];
 
     return new Promise((resolve, reject) => {
@@ -44,11 +44,11 @@ const addMoneyTransfer = async (transferData) => {
 // Update a money transfer by ID
 const updateMoneyTransfer = async (transferId, transferData) => {
     const query = `
-        UPDATE moneytransfer 
+        UPDATE aepsmoneytransfer 
         SET portalId = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
-        Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, FixedAmt = ?, BankCharge = ?,
-        Extra = ?, BankDeposit = ?, CustDeposit = ? 
+        Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?,
+        Extra = ?, CustDeposit = ?, TransactionType = ?, OtherType = ?, OtherName = ? 
         WHERE TransferID = ?`;
 
     const values = [
@@ -68,11 +68,11 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.Cash5 || 0,
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
-        transferData.FixedAmt || 0.00,
-        transferData.BankCharge || 0.00,
         transferData.Extra || 0.00,
-        transferData.BankDeposit || 0.00,
         transferData.CustDeposit || 0.00,
+        transferData.TransactionType || null,
+        transferData.OtherType || null,
+        transferData.OtherName || null,
         transferId
     ];
 
@@ -92,8 +92,8 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Step 1: Get TotalCash and portalId from moneytransfer table
         const query1 = `
-            SELECT BankDeposit, portalId
-            FROM moneytransfer
+            SELECT CustDeposit, TransactionType, OtherType, portalId
+            FROM aepsmoneytransfer
             WHERE TransferID = ?`;
 
         const values1 = [TransferID];
@@ -111,8 +111,8 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        const { BankDeposit, portalId } = result1;
-        console.log('BankDeposit:', BankDeposit, 'portalId:', portalId);
+        const { CustDeposit, TransactionType, OtherType, portalId } = result1;
+        console.log('CustDeposit:', CustDeposit, 'TransactionType:', TransactionType, 'OtherType:', OtherType, 'portalId:', portalId);
 
         // Step 2: Get the current balance from the portals table
         const query2 = `
@@ -138,27 +138,45 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const { balance } = result2;
         console.log('Current balance:', balance);
 
-        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract BankDeposit
+        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract CustDeposit
         if (balance === null || balance === undefined) {
             return Promise.reject(new Error('No balance found in the portal'));
         }
 
         // Check if the balance is sufficient
-        if (balance < BankDeposit) {
+        if (balance < CustDeposit) {
             return Promise.reject(new Error('Insufficient balance in the portal'));
         }
 
         // Step 4: Calculate the new balance and update it
-        const newBalance = balance - BankDeposit;
-        console.log('New balance:', newBalance);
+        let newBalance; // Declare outside to ensure it's available
+        let transactionTypeLabel = ''; // Dynamic transaction type
+
+        if (TransactionType === 'aeps_withdrawal') {
+            newBalance = balance + CustDeposit;
+            transactionTypeLabel = 'Add Balance';
+        }
+        else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening') {
+            newBalance = balance - CustDeposit;
+            transactionTypeLabel = 'Remove Balance';
+        }
+        else if (TransactionType === 'other') {
+            if (OtherType === 'debit') {
+                newBalance = balance - CustDeposit;
+                transactionTypeLabel = 'Remove Balance';
+            } else {
+                newBalance = balance + CustDeposit;
+                transactionTypeLabel = 'Add Balance';
+            }
+        }
 
         // Prepare log data
         const logData = {
             portalId: portalId,
             beforeBalance: balance, // Initial balance before any transaction
-            balance: BankDeposit,
-            type: 'Remove Balance',
-            transactionType : 'money_transfer',
+            balance: CustDeposit,
+            type: transactionTypeLabel, // Dynamic transaction type
+            transactionType: TransactionType,
             afterBalance: newBalance,
             createdAt: new Date()
         };
@@ -167,9 +185,9 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Update the portals table with the new balance
         const query3 = `
-            UPDATE portals
-            SET balance = ?
-            WHERE portalId = ?`;
+                        UPDATE portals
+                        SET balance = ?
+                        WHERE portalId = ?`;
 
         const values3 = [newBalance, portalId];
 
@@ -188,7 +206,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Step 5: Update the moneytransfer table with the new TransactionNo
         const query4 = `
-            UPDATE moneytransfer
+            UPDATE aepsmoneytransfer
             SET TransactionNo = ?
             WHERE TransferID = ?`;
 
@@ -217,7 +235,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 const addPortalLog = async (logData) => {
     const query = `
         INSERT INTO portal_logs 
-        (portal_id, before_balance, balance, transactionType, type, after_balance, createdAt)
+        (portal_id, before_balance, balance, type, transactionType, after_balance, createdAt)
         VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
@@ -239,7 +257,7 @@ const addPortalLog = async (logData) => {
 };
 // Delete a money transfer by ID
 const deleteMoneyTransfer = async (transferId) => {
-    const query = 'DELETE FROM moneytransfer WHERE TransferID = ?';
+    const query = 'DELETE FROM aepsmoneytransfer WHERE TransferID = ?';
 
     return new Promise((resolve, reject) => {
         dbconnection.query(query, [transferId], (error, results) => {
@@ -251,7 +269,7 @@ const deleteMoneyTransfer = async (transferId) => {
 
 // Get a money transfer by ID
 const getMoneyTransferById = async (transferId) => {
-    const query = 'SELECT * FROM moneytransfer WHERE TransferID = ?';
+    const query = 'SELECT * FROM aepsmoneytransfer WHERE TransferID = ?';
 
     return new Promise((resolve, reject) => {
         dbconnection.query(query, [transferId], (error, results) => {
@@ -264,9 +282,9 @@ const getMoneyTransferById = async (transferId) => {
 // Get all money transfers
 const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
     let query = `
-    SELECT moneytransfer.*, portals.Name AS portalName
-    FROM moneytransfer 
-    JOIN portals ON moneytransfer.portalId = portals.PortalID
+    SELECT aepsmoneytransfer.*, portals.Name AS portalName
+    FROM aepsmoneytransfer 
+    JOIN portals ON aepsmoneytransfer.portalId = portals.PortalID
     `;
 
     const queryParams = [];
@@ -274,19 +292,19 @@ const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
 
     // Add conditions for filtering by CreatedAt if dates are provided
     if (fromDate && toDate) {
-        conditions.push(`moneytransfer.CreatedAt BETWEEN ? AND ?`);
+        conditions.push(`aepsmoneytransfer.CreatedAt BETWEEN ? AND ?`);
         queryParams.push(fromDate, toDate);
     } else if (fromDate) {
-        conditions.push(`moneytransfer.CreatedAt >= ?`);
+        conditions.push(`aepsmoneytransfer.CreatedAt >= ?`);
         queryParams.push(fromDate);
     } else if (toDate) {
-        conditions.push(`moneytransfer.CreatedAt <= ?`);
+        conditions.push(`aepsmoneytransfer.CreatedAt <= ?`);
         queryParams.push(toDate);
     }
 
     // Add condition for portalId if provided
     if (portalId) {
-        conditions.push(`moneytransfer.portalId = ?`);
+        conditions.push(`aepsmoneytransfer.portalId = ?`);
         queryParams.push(portalId);
     }
 
@@ -296,7 +314,7 @@ const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
     }
 
     // Sort results by CreatedAt in descending order
-    query += ` ORDER BY moneytransfer.CreatedAt DESC`;
+    query += ` ORDER BY aepsmoneytransfer.CreatedAt DESC`;
 
     return new Promise((resolve, reject) => {
         dbconnection.query(query, queryParams, (error, results) => {
@@ -309,7 +327,7 @@ const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
 const getTotalCashWithTransactionNo = async () => {
     const query = `
         SELECT SUM(TotalCash) AS totalCashSum
-        FROM moneytransfer
+        FROM aepsmoneytransfer
         WHERE TransactionNo IS NOT NULL;
     `;
 
@@ -324,7 +342,7 @@ const getTotalCashWithTransactionNo = async () => {
 const getOverallTotalCash = async () => {
     const query = `
         SELECT SUM(TotalCash) AS overallTotalCash
-        FROM moneytransfer;
+        FROM aepsmoneytransfer;
     `;
 
     return new Promise((resolve, reject) => {
