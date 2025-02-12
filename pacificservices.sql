@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 10, 2025 at 01:23 PM
+-- Generation Time: Feb 11, 2025 at 12:43 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -234,6 +234,64 @@ INSERT INTO `portal_logs` (`id`, `portal_id`, `before_balance`, `balance`, `type
 (12, 1, 6908.00, 480.00, 'Remove Balance', 6428.00, '2025-02-03 05:36:59', 'other'),
 (13, 3, 1000.00, 920.00, 'Remove Balance', 80.00, '2025-02-03 06:25:43', 'other');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sales`
+--
+
+CREATE TABLE `sales` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `portalId` int(11) NOT NULL,
+  `services` longtext NOT NULL,
+  `total_price` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `services`
+--
+
+CREATE TABLE `services` (
+  `id` int(11) NOT NULL,
+  `service_name` varchar(255) NOT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `commission_price` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `services`
+--
+
+INSERT INTO `services` (`id`, `service_name`, `price`, `commission_price`, `created_at`) VALUES
+(1, 'Pan card', 150.00, 30.00, '2025-02-11 07:06:13'),
+(3, 'aadhar card', 300.00, 80.00, '2025-02-11 10:56:09');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `phone`, `created_at`) VALUES
+(1, 'Krupalsinh Chavda', '7600230620', '2025-02-11 05:34:27'),
+(3, 'drashti Vaishanani', '9664524393', '2025-02-11 05:54:39');
+
 --
 -- Indexes for dumped tables
 --
@@ -276,6 +334,24 @@ ALTER TABLE `portal_logs`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `sales`
+--
+ALTER TABLE `sales`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `services`
+--
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -314,6 +390,24 @@ ALTER TABLE `portals`
 --
 ALTER TABLE `portal_logs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `sales`
+--
+ALTER TABLE `sales`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `services`
+--
+ALTER TABLE `services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
