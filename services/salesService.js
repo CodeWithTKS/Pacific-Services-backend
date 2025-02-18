@@ -2,13 +2,13 @@
 const db = require("../config/database");
 
 // Fetch all sales
-const getSales = async (fromDate, toDate, portalId) => {
+const getSales = async (fromDate, toDate) => {
     let query = `
         SELECT sales.*, users.name AS user_name
         FROM sales
         JOIN users ON sales.user_id = users.id
     `;
-    
+
     const queryParams = [];
     const conditions = [];
 
@@ -22,12 +22,6 @@ const getSales = async (fromDate, toDate, portalId) => {
     } else if (toDate) {
         conditions.push(`sales.created_at <= ?`);
         queryParams.push(toDate);
-    }
-
-    // Add condition for portalId if provided
-    if (portalId) {
-        conditions.push(`sales.portalId = ?`);
-        queryParams.push(portalId);
     }
 
     // Add conditions to the query if there are any
@@ -46,11 +40,11 @@ const getSales = async (fromDate, toDate, portalId) => {
             const salesWithServices = salesResults.map(async (sale) => {
                 // Parse the services JSON string into an array
                 const services = JSON.parse(sale.services);
-                
+
                 // Fetch service names based on serviceId from the services table
                 const serviceIds = services.map(service => service.serviceId);
                 const serviceQuery = `SELECT id, service_name FROM services WHERE id IN (${serviceIds.join(', ')})`;
-                
+
                 return new Promise((resolveServices, rejectServices) => {
                     db.query(serviceQuery, (error, serviceResults) => {
                         if (error) return rejectServices(error);
@@ -92,74 +86,79 @@ const getSaleById = async (id) => {
 
 // Create a new sale
 const createSale = async (sale) => {
-    const queryInsertSale = `
-        INSERT INTO sales (user_id, portalId, services, total_price) 
-        VALUES (?, ?, ?, ?)`;
-    const queryUpdateBalance = `
-        UPDATE portals 
-        SET Balance = Balance - ? 
-        WHERE PortalID = ?`;
-    const queryGetBalance = `
-        SELECT Balance FROM portals WHERE PortalID = ?`;
+    const queryInsertSale = `INSERT INTO sales (user_id, services, total_price) VALUES (?, ?, ?)`;
+    const queryUpdateBalance = `UPDATE portals SET Balance = Balance - ? WHERE PortalID = ?`;
+    const queryGetBalance = `SELECT Balance FROM portals WHERE PortalID = ?`;
 
-    const { user_id, portalId, services, total_price } = sale;
+    const { user_id, services, total_price } = sale;
 
     try {
-        // Step 1: Get current balance from portals table
-        const result1 = await new Promise((resolve, reject) => {
-            db.query(queryGetBalance, [portalId], (error, results) => {
-                if (error) return reject(error);
-                if (results.length === 0) return reject(new Error('Portal not found'));
-                resolve(results[0]);
+        // Step 1: Validate if all portals have sufficient balance
+        for (const service of services) {
+            const { portalId, amount } = service;
+            const result = await new Promise((resolve, reject) => {
+                db.query(queryGetBalance, [portalId], (error, results) => {
+                    if (error) return reject(error);
+                    if (results.length === 0) return reject(new Error(`Portal ${portalId} not found`));
+                    resolve(results[0]);
+                });
             });
-        });
 
-        const { Balance: currentBalance } = result1;
-
-        // Step 2: Check if balance is sufficient
-        if (currentBalance < total_price) {
-            throw new Error('Insufficient balance in the portal');
+            if (result.Balance < amount) {
+                throw new Error(`Insufficient balance in portal ${portalId}`);
+            }
         }
 
-        // Step 3: Calculate the new balance
-        const newBalance = currentBalance - total_price;
+        // Step 2: Deduct balance and log transactions for each portal
+        for (const service of services) {
+            const { portalId, amount } = service;
 
-        // Prepare log data
-        const logData = {
-            portalId: portalId,
-            beforeBalance: currentBalance,  // Initial balance before the transaction
-            balance: total_price,           // Amount removed from the balance
-            type: 'Remove Balance',
-            transactionType: 'Services_Transfer',
-            afterBalance: newBalance,      // New balance after deduction
-            createdAt: new Date()
-        };
+            // Get current balance
+            const result = await new Promise((resolve, reject) => {
+                db.query(queryGetBalance, [portalId], (error, results) => {
+                    if (error) return reject(error);
+                    resolve(results[0]);
+                });
+            });
 
-        // Step 4: Log the transaction
-        await addPortalLog(logData);
+            const currentBalance = result.Balance;
+            const newBalance = currentBalance - amount;
 
-        // Step 5: Insert sale into the sales table
+            // Log transaction
+            const logData = {
+                portalId,
+                beforeBalance: currentBalance,
+                balance: amount,
+                type: 'Remove Balance',
+                transactionType: 'Services_Transfer',
+                afterBalance: newBalance,
+                createdAt: new Date()
+            };
+
+            await addPortalLog(logData);
+
+            // Update balance
+            await new Promise((resolve, reject) => {
+                db.query(queryUpdateBalance, [amount, portalId], (error, results) => {
+                    if (error) return reject(error);
+                    resolve(results);
+                });
+            });
+        }
+
+        // Step 3: Insert sale into the sales table
         const saleResult = await new Promise((resolve, reject) => {
-            db.query(queryInsertSale, [user_id, portalId, JSON.stringify(services), total_price], (error, results) => {
+            db.query(queryInsertSale, [user_id, JSON.stringify(services), total_price], (error, results) => {
                 if (error) return reject(error);
                 resolve(results.insertId);
             });
         });
 
-        // Step 6: Update portal balance in the portals table
-        await new Promise((resolve, reject) => {
-            db.query(queryUpdateBalance, [total_price, portalId], (error, results) => {
-                if (error) return reject(error);
-                resolve(results);
-            });
-        });
-
-        // Step 7: Return the result
-        return { message: 'Sale created and balance updated successfully', saleId: saleResult };
-
+        // Step 4: Return success response
+        return { message: 'Sale created and balances updated successfully', saleId: saleResult };
     } catch (error) {
         console.error('Error:', error);
-        throw error; // Rethrow error after logging it
+        throw error;
     }
 };
 
@@ -193,11 +192,11 @@ const addPortalLog = async (logData) => {
 const updateSale = async (id, sale) => {
     const query = `
         UPDATE sales 
-        SET user_id = ?, portalId = ?, services = ?, total_price = ? 
+        SET user_id = ?, services = ?, total_price = ? 
         WHERE id = ?`;
-    const { user_id, portalId, services, total_price } = sale;
+    const { user_id, services, total_price } = sale;
     return new Promise((resolve, reject) => {
-        db.query(query, [user_id, portalId, JSON.stringify(services), total_price, id], (error, results) => {
+        db.query(query, [user_id, JSON.stringify(services), total_price, id], (error, results) => {
             if (error) return reject(error);
             resolve(results.affectedRows > 0);
         });

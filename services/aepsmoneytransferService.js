@@ -6,8 +6,8 @@ const addMoneyTransfer = async (transferData) => {
         INSERT INTO aepsmoneytransfer 
         (portalId, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
         Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, 
-        Extra, CustDeposit, TransactionType, OtherType, OtherName)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        Extra, TransactionType, OtherType, OtherName)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
@@ -27,7 +27,6 @@ const addMoneyTransfer = async (transferData) => {
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
         transferData.Extra || 0.00,
-        transferData.CustDeposit || 0.00,
         transferData.TransactionType || null,
         transferData.OtherType || null,
         transferData.OtherName || null,
@@ -48,7 +47,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         SET portalId = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
         Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?,
-        Extra = ?, CustDeposit = ?, TransactionType = ?, OtherType = ?, OtherName = ? 
+        Extra = ?, TransactionType = ?, OtherType = ?, OtherName = ? 
         WHERE TransferID = ?`;
 
     const values = [
@@ -69,7 +68,6 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
         transferData.Extra || 0.00,
-        transferData.CustDeposit || 0.00,
         transferData.TransactionType || null,
         transferData.OtherType || null,
         transferData.OtherName || null,
@@ -92,7 +90,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Step 1: Get TotalCash and portalId from moneytransfer table
         const query1 = `
-            SELECT CustDeposit, TransactionType, OtherType, portalId
+            SELECT CollectionAmt, TransactionType, OtherType, portalId
             FROM aepsmoneytransfer
             WHERE TransferID = ?`;
 
@@ -111,8 +109,8 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        const { CustDeposit, TransactionType, OtherType, portalId } = result1;
-        console.log('CustDeposit:', CustDeposit, 'TransactionType:', TransactionType, 'OtherType:', OtherType, 'portalId:', portalId);
+        const { CollectionAmt, TransactionType, OtherType, portalId } = result1;
+        console.log('CollectionAmt:', CollectionAmt, 'TransactionType:', TransactionType, 'OtherType:', OtherType, 'portalId:', portalId);
 
         // Step 2: Get the current balance from the portals table
         const query2 = `
@@ -138,14 +136,9 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const { balance } = result2;
         console.log('Current balance:', balance);
 
-        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract CustDeposit
+        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract CollectionAmt
         if (balance === null || balance === undefined) {
             return Promise.reject(new Error('No balance found in the portal'));
-        }
-
-        // Check if the balance is sufficient
-        if (balance < CustDeposit) {
-            return Promise.reject(new Error('Insufficient balance in the portal'));
         }
 
         // Step 4: Calculate the new balance and update it
@@ -153,19 +146,19 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         let transactionTypeLabel = ''; // Dynamic transaction type
 
         if (TransactionType === 'aeps_withdrawal') {
-            newBalance = balance + CustDeposit;
+            newBalance = balance + CollectionAmt;
             transactionTypeLabel = 'Add Balance';
         }
         else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening') {
-            newBalance = balance - CustDeposit;
+            newBalance = balance - CollectionAmt;
             transactionTypeLabel = 'Remove Balance';
         }
         else if (TransactionType === 'other') {
             if (OtherType === 'debit') {
-                newBalance = balance - CustDeposit;
+                newBalance = balance - CollectionAmt;
                 transactionTypeLabel = 'Remove Balance';
             } else {
-                newBalance = balance + CustDeposit;
+                newBalance = balance + CollectionAmt;
                 transactionTypeLabel = 'Add Balance';
             }
         }
@@ -174,7 +167,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const logData = {
             portalId: portalId,
             beforeBalance: balance, // Initial balance before any transaction
-            balance: CustDeposit,
+            balance: CollectionAmt,
             type: transactionTypeLabel, // Dynamic transaction type
             transactionType: TransactionType,
             afterBalance: newBalance,

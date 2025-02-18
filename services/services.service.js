@@ -25,11 +25,11 @@ const getServiceById = async (id) => {
 // Create a new service
 const createService = async (service) => {
     const query = `
-        INSERT INTO services (service_name, price, commission_price) 
-        VALUES (?, ?, ?)`;
-    const { service_name, price, commission_price } = service;
+        INSERT INTO services (portalId, service_name, price, commission_price) 
+        VALUES (?, ?, ?, ?)`;
+    const { portalId, service_name, price, commission_price } = service;
     return new Promise((resolve, reject) => {
-        db.query(query, [service_name, price, commission_price], (error, results) => {
+        db.query(query, [portalId, service_name, price, commission_price], (error, results) => {
             if (error) return reject(error);
             resolve(results.insertId);
         });
@@ -40,11 +40,11 @@ const createService = async (service) => {
 const updateService = async (id, service) => {
     const query = `
         UPDATE services 
-        SET service_name = ?, price = ?, commission_price = ? 
+        SET portalId = ?, service_name = ?, price = ?, commission_price = ? 
         WHERE id = ?`;
-    const { service_name, price, commission_price } = service;
+    const { portalId, service_name, price, commission_price } = service;
     return new Promise((resolve, reject) => {
-        db.query(query, [service_name, price, commission_price, id], (error, results) => {
+        db.query(query, [portalId, service_name, price, commission_price, id], (error, results) => {
             if (error) return reject(error);
             resolve(results.affectedRows > 0);
         });
