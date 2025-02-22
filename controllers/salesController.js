@@ -4,8 +4,8 @@ const salesService = require('../services/salesService');
 // Create a new sale
 const createSale = async (req, res) => {
     try {
-        const { user_id, services, total_price } = req.body;
-        const result = await salesService.createSale({ user_id, services, total_price });
+        const { name, phone, paymentType, services, subtotal_price, total_price } = req.body;
+        const result = await salesService.createSale({ name, phone, paymentType, services, subtotal_price, total_price });
         res.status(201).json({ message: 'Sale created', id: result });
     } catch (error) {
         res.status(500).json({ error: 'Failed to create sale', details: error });

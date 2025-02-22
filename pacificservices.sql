@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 18, 2025 at 06:31 AM
+-- Generation Time: Feb 22, 2025 at 03:20 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -65,7 +65,8 @@ INSERT INTO `aepsmoneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `ACN
 (1, 'aeps001', '1', '1201', 'Chavda', '2025-02-02 18:30:00', 'aeps_withdrawal', NULL, NULL, 'Krupalsinh', '7600230620', 'dsdsd', 2, 0, 0, 0, 0, 0, 0, 1000.00, 1000.00, 20.00, 12.00, 8.00, 992.00, 980.00, '2025-02-02 12:26:59'),
 (3, 'aeps002', '1', '451265842', 'kumar', '2025-02-02 18:30:00', 'other', 'debit', 'kuch bhi', 'Hero', '9815146345', 'dsdsd3', 0, 5, 0, 0, 0, 0, 0, 500.00, 500.00, 0.00, 0.00, 20.00, 0.00, 480.00, '2025-02-03 05:36:50'),
 (4, 'aeps003', '3', '255165651323', 'jdjsd', '2025-02-03 18:30:00', 'other', 'debit', 'cut', 'tjsdk', '5254274121', 'dsds', 0, 10, 0, 0, 0, 0, 0, 1000.00, 1000.00, 0.00, 0.00, 80.00, 0.00, 920.00, '2025-02-03 06:25:20'),
-(5, '32332', '1', '212122', 'dsd', '2025-02-18 04:44:41', 'aeps_withdrawal', NULL, NULL, 'ds', '2121221222', 'dsq3', 10, 0, 0, 0, 0, 0, 0, 5000.00, 5000.00, 0.00, 0.00, 50.00, 0.00, 0.00, '2025-02-18 04:47:26');
+(5, '32332', '1', '212122', 'dsd', '2025-02-18 04:44:41', 'aeps_withdrawal', NULL, NULL, 'ds', '2121221222', 'dsq3', 10, 0, 0, 0, 0, 0, 0, 5000.00, 5000.00, 0.00, 0.00, 50.00, 0.00, 0.00, '2025-02-18 04:47:26'),
+(6, '44r436', '2', '3232332', 'dsds', '2025-02-18 09:42:50', 'aeps_withdrawal', NULL, NULL, 'dsd', '3323232332', 'ccew', 100, 0, 0, 0, 0, 0, 0, 50000.00, 50000.00, 0.00, 0.00, 400.00, 0.00, 0.00, '2025-02-18 09:43:33');
 
 -- --------------------------------------------------------
 
@@ -166,7 +167,8 @@ INSERT INTO `moneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `ACNo`, 
 (3, NULL, '2', '7878454125', 'Chavda', '2025-01-03 12:06:36', 'Ajitsinh', '9924560775', 'AUNaroda002', 0, 8, 0, 0, 2, 0, 0, 820.00, 820.00, 20.00, 5.00, 15.00, 805.00, 800.00, '2025-01-03 15:20:13'),
 (4, NULL, '3', '451203010', 'Solanki', '2025-01-04 18:30:00', 'Aasha', '9656324112', 'HDFCkalu231', 0, 5, 0, 0, 2, 0, 0, 520.00, 520.00, 20.00, 10.00, 10.00, 510.00, 500.00, '2025-01-05 06:35:05'),
 (5, NULL, '3', '7811521', 'ranavat', '2025-01-06 18:30:00', 'Nandaben', '9645235425', 'sdsdsd', 3, 0, 0, 0, 2, 0, 0, 1520.00, 1520.00, 20.00, 1.12, 18.88, 1501.12, 1500.00, '2025-01-06 05:39:29'),
-(6, 'jbjbkj221', '1', '551155', 'nnhjhvhh', '2025-01-04 18:30:00', 'hjbhjbj', '4454524454', ' n n', 1, 0, 0, 0, 2, 0, 0, 520.00, 520.00, 20.00, 12.00, 8.00, 512.00, 500.00, '2025-01-06 17:06:56');
+(6, 'jbjbkj221', '1', '551155', 'nnhjhvhh', '2025-01-04 18:30:00', 'hjbhjbj', '4454524454', ' n n', 1, 0, 0, 0, 2, 0, 0, 520.00, 520.00, 20.00, 12.00, 8.00, 512.00, 500.00, '2025-01-06 17:06:56'),
+(7, '655g4', '1', '555556', 'ghghhg', '2025-02-18 09:40:07', 'ghgh', '6565656565', 'bmm66', 5, 0, 0, 0, 0, 0, 0, 2500.00, 2500.00, 40.00, 36.00, 4.00, 2496.00, 2460.00, '2025-02-18 09:41:53');
 
 -- --------------------------------------------------------
 
@@ -195,9 +197,9 @@ CREATE TABLE `portals` (
 --
 
 INSERT INTO `portals` (`PortalID`, `Name`, `Code`, `ContactNo`, `ContactPerson`, `Email`, `ACNo`, `Balance`, `TransactionLimit`, `ServiceTax`, `TDSRate`, `OpeningBalanceDate`, `CreatedAt`) VALUES
-(1, 'SBI', 'SBI001', '7600230620', 'krupalsinh', NULL, '0001223551', 11608.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 10:49:23'),
-(2, 'AU Bank', 'AUBank45', '9998271995', 'Hetal', NULL, '78945641', 4120.00, 25200.00, 0, 0.00, '2025-01-03', '2025-01-03 14:46:27'),
-(3, 'HDFC', 'HDFC003', '7600230620', 'Bhagawan', NULL, '1011011010', 280.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-05 06:27:36');
+(1, 'SBI', 'SBI001', '7600230620', 'krupalsinh', NULL, '0001223551', 8992.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 10:49:23'),
+(2, 'AU Bank', 'AUBank45', '9998271995', 'Hetal', NULL, '78945641', 54120.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 14:46:27'),
+(3, 'HDFC', 'HDFC003', '7600230620', 'Bhagawan', NULL, '1011011010', 130.00, 25200.00, 0, 0.00, '2025-01-07', '2025-01-05 06:27:36');
 
 -- --------------------------------------------------------
 
@@ -247,7 +249,11 @@ INSERT INTO `portal_logs` (`id`, `portal_id`, `before_balance`, `balance`, `type
 (24, 2, 4780.00, 220.00, 'Services_Transfer', 4560.00, '2025-02-18 05:19:53', 'Remove Balance'),
 (25, 3, 430.00, 150.00, 'Services_Transfer', 280.00, '2025-02-18 05:19:53', 'Remove Balance'),
 (26, 2, 4560.00, 220.00, 'Services_Transfer', 4340.00, '2025-02-18 05:22:52', 'Remove Balance'),
-(27, 2, 4340.00, 220.00, 'Services_Transfer', 4120.00, '2025-02-18 05:27:30', 'Remove Balance');
+(27, 2, 4340.00, 220.00, 'Services_Transfer', 4120.00, '2025-02-18 05:27:30', 'Remove Balance'),
+(28, 1, 11608.00, 2496.00, 'money_transfer', 9112.00, '2025-02-18 09:42:15', 'Remove Balance'),
+(29, 2, 4120.00, 50000.00, 'Add Balance', 54120.00, '2025-02-18 09:45:32', 'aeps_withdrawal'),
+(31, 1, 9112.00, 120.00, 'Services_Transfer', 8992.00, '2025-02-22 01:45:15', 'Remove Balance'),
+(32, 3, 280.00, 150.00, 'Services_Transfer', 130.00, '2025-02-22 01:58:03', 'Remove Balance');
 
 -- --------------------------------------------------------
 
@@ -257,8 +263,11 @@ INSERT INTO `portal_logs` (`id`, `portal_id`, `before_balance`, `balance`, `type
 
 CREATE TABLE `sales` (
   `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `phone` varchar(255) DEFAULT NULL,
+  `paymentType` varchar(255) NOT NULL,
   `services` longtext NOT NULL,
+  `subtotal_price` decimal(10,2) NOT NULL,
   `total_price` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -267,13 +276,15 @@ CREATE TABLE `sales` (
 -- Dumping data for table `sales`
 --
 
-INSERT INTO `sales` (`id`, `user_id`, `services`, `total_price`, `created_at`) VALUES
-(1, 1, '[{\"serviceId\":3,\"price\":300,\"commission_price\":80,\"amount\":220},{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 340.00, '2025-02-11 12:12:00'),
-(2, 3, '[{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 120.00, '2025-02-12 05:39:18'),
-(3, 1, '[{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 120.00, '2025-02-14 14:44:08'),
-(4, 1, '[{\"serviceId\":1,\"portalId\":1,\"price\":150,\"commission_price\":30,\"amount\":120},{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220},{\"serviceId\":4,\"portalId\":3,\"price\":200,\"commission_price\":50,\"amount\":150}]', 490.00, '2025-02-18 05:19:53'),
-(5, 3, '[{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220}]', 220.00, '2025-02-18 05:22:52'),
-(6, 5, '[{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220}]', 220.00, '2025-02-18 05:27:30');
+INSERT INTO `sales` (`id`, `name`, `phone`, `paymentType`, `services`, `subtotal_price`, `total_price`, `created_at`) VALUES
+(1, '', NULL, '', '[{\"serviceId\":3,\"price\":300,\"commission_price\":80,\"amount\":220},{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 0.00, 340.00, '2025-02-11 12:12:00'),
+(2, '', NULL, '', '[{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 0.00, 120.00, '2025-02-12 05:39:18'),
+(3, '', NULL, '', '[{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 0.00, 120.00, '2025-02-14 14:44:08'),
+(4, '', NULL, '', '[{\"serviceId\":1,\"portalId\":1,\"price\":150,\"commission_price\":30,\"amount\":120},{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220},{\"serviceId\":4,\"portalId\":3,\"price\":200,\"commission_price\":50,\"amount\":150}]', 0.00, 490.00, '2025-02-18 05:19:53'),
+(5, '', NULL, '', '[{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220}]', 0.00, 220.00, '2025-02-18 05:22:52'),
+(6, '', NULL, '', '[{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220}]', 0.00, 220.00, '2025-02-18 05:27:30'),
+(7, '', NULL, '', '[{\"serviceId\":1,\"portalId\":1,\"description\":\"teet\",\"price\":150,\"commission_price\":30,\"subamount\":150,\"amount\":120}]', 150.00, 120.00, '2025-02-22 01:45:15'),
+(8, 'test', '', '', '[{\"serviceId\":4,\"portalId\":3,\"description\":\"test\",\"price\":200,\"commission_price\":50,\"subamount\":200,\"amount\":150}]', 200.00, 150.00, '2025-02-22 01:58:03');
 
 -- --------------------------------------------------------
 
@@ -388,7 +399,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `aepsmoneytransfer`
 --
 ALTER TABLE `aepsmoneytransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `commission`
@@ -406,7 +417,7 @@ ALTER TABLE `login`
 -- AUTO_INCREMENT for table `moneytransfer`
 --
 ALTER TABLE `moneytransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `portals`
@@ -418,13 +429,13 @@ ALTER TABLE `portals`
 -- AUTO_INCREMENT for table `portal_logs`
 --
 ALTER TABLE `portal_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `services`

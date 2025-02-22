@@ -3,11 +3,7 @@ const db = require("../config/database");
 
 // Fetch all sales
 const getSales = async (fromDate, toDate) => {
-    let query = `
-        SELECT sales.*, users.name AS user_name
-        FROM sales
-        JOIN users ON sales.user_id = users.id
-    `;
+    let query = `SELECT * FROM sales`;
 
     const queryParams = [];
     const conditions = [];
@@ -86,11 +82,11 @@ const getSaleById = async (id) => {
 
 // Create a new sale
 const createSale = async (sale) => {
-    const queryInsertSale = `INSERT INTO sales (user_id, services, total_price) VALUES (?, ?, ?)`;
+    const queryInsertSale = `INSERT INTO sales (name, phone, paymentType, services, subtotal_price, total_price) VALUES (?, ?, ?, ?, ?, ?)`;
     const queryUpdateBalance = `UPDATE portals SET Balance = Balance - ? WHERE PortalID = ?`;
     const queryGetBalance = `SELECT Balance FROM portals WHERE PortalID = ?`;
 
-    const { user_id, services, total_price } = sale;
+    const { name, phone, paymentType, services, subtotal_price, total_price } = sale;
 
     try {
         // Step 1: Validate if all portals have sufficient balance
@@ -148,7 +144,7 @@ const createSale = async (sale) => {
 
         // Step 3: Insert sale into the sales table
         const saleResult = await new Promise((resolve, reject) => {
-            db.query(queryInsertSale, [user_id, JSON.stringify(services), total_price], (error, results) => {
+            db.query(queryInsertSale, [name, phone, paymentType, JSON.stringify(services), subtotal_price, total_price], (error, results) => {
                 if (error) return reject(error);
                 resolve(results.insertId);
             });
@@ -192,11 +188,11 @@ const addPortalLog = async (logData) => {
 const updateSale = async (id, sale) => {
     const query = `
         UPDATE sales 
-        SET user_id = ?, services = ?, total_price = ? 
+        SET name = ?, services = ?, total_price = ? 
         WHERE id = ?`;
-    const { user_id, services, total_price } = sale;
+    const { name, services, total_price } = sale;
     return new Promise((resolve, reject) => {
-        db.query(query, [user_id, JSON.stringify(services), total_price, id], (error, results) => {
+        db.query(query, [name, JSON.stringify(services), total_price, id], (error, results) => {
             if (error) return reject(error);
             resolve(results.affectedRows > 0);
         });
