@@ -4,13 +4,14 @@ const dbconnection = require('../config/database');
 const addMoneyTransfer = async (transferData) => {
     const query = `
         INSERT INTO moneytransfer 
-        (portalId, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
+        (portalId, VendorID, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
         Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, FixedAmt, 
         BankCharge, Extra, BankDeposit, CustDeposit)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
+        transferData.VendorID,
         transferData.ACNo,
         transferData.LastName || null,
         transferData.TransactionDate,
@@ -45,7 +46,7 @@ const addMoneyTransfer = async (transferData) => {
 const updateMoneyTransfer = async (transferId, transferData) => {
     const query = `
         UPDATE moneytransfer 
-        SET portalId = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
+        SET portalId = ?, VendorID = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
         Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, FixedAmt = ?, BankCharge = ?,
         Extra = ?, BankDeposit = ?, CustDeposit = ? 
@@ -53,6 +54,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
 
     const values = [
         transferData.portalId,
+        transferData.VendorID,
         transferData.ACNo,
         transferData.LastName || null,
         transferData.TransactionDate,
@@ -158,7 +160,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             beforeBalance: balance, // Initial balance before any transaction
             balance: BankDeposit,
             type: 'Remove Balance',
-            transactionType : 'money_transfer',
+            transactionType: 'money_transfer',
             afterBalance: newBalance,
             createdAt: new Date()
         };
@@ -262,11 +264,14 @@ const getMoneyTransferById = async (transferId) => {
 };
 
 // Get all money transfers
-const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
+const getAllMoneyTransfers = async (fromDate, toDate, portalId, VendorID) => {
     let query = `
-    SELECT moneytransfer.*, portals.Name AS portalName
-    FROM moneytransfer 
-    JOIN portals ON moneytransfer.portalId = portals.PortalID
+            SELECT moneytransfer.*, 
+               portals.Name AS portalName, 
+               COALESCE(vendor.name, 'N/A') AS vendorName  -- Handle NULL values
+        FROM moneytransfer 
+        JOIN portals ON moneytransfer.portalId = portals.PortalID
+        LEFT JOIN vendor ON moneytransfer.VendorID = vendor.id
     `;
 
     const queryParams = [];
@@ -288,6 +293,12 @@ const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
     if (portalId) {
         conditions.push(`moneytransfer.portalId = ?`);
         queryParams.push(portalId);
+    }
+
+    // Add condition for VendorID if provided
+    if (VendorID) {
+        conditions.push(`moneytransfer.VendorID = ?`);
+        queryParams.push(VendorID);
     }
 
     // Add conditions to the query if there are any

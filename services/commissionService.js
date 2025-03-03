@@ -4,8 +4,8 @@ const dbconnection = require('../config/database');
 const addCommission = async (commissionData) => {
     const query = `
         INSERT INTO commission (portalId, FromAmount, ToAmount, BankType, Amount, Percentage, 
-                                PacificFixedAmount, PacificAmount, PacificExtraAmount, CommissionType)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                                PacificFixedAmount, PacificAmount, PacificExtraAmount, CommissionType, CommissionFor, VendorID)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
         commissionData.portalId,
         commissionData.FromAmount,
@@ -16,7 +16,9 @@ const addCommission = async (commissionData) => {
         commissionData.PacificFixedAmount || 0.00,
         commissionData.PacificAmount || 0.00,
         commissionData.PacificExtraAmount || 0.00,
-        commissionData.CommissionType
+        commissionData.CommissionType,
+        commissionData.CommissionFor || 'self',
+        commissionData.VendorID || 0,
     ];
 
     return new Promise((resolve, reject) => {
@@ -32,7 +34,8 @@ const updateCommission = async (commissionId, commissionData) => {
     const query = `
         UPDATE commission 
         SET portalId = ?, FromAmount = ?, ToAmount = ?, BankType = ?, Amount = ?, Percentage = ?,
-            PacificFixedAmount = ?, PacificAmount = ?, PacificExtraAmount = ?, CommissionType = ? 
+            PacificFixedAmount = ?, PacificAmount = ?, PacificExtraAmount = ?, CommissionType = ?,
+            CommissionFor = ?, VendorID = ?
         WHERE CommissionID = ?`;
     const values = [
         commissionData.portalId,
@@ -45,6 +48,8 @@ const updateCommission = async (commissionId, commissionData) => {
         commissionData.PacificAmount || 0.00,
         commissionData.PacificExtraAmount || 0.00,
         commissionData.CommissionType,
+        commissionData.CommissionFor || 'self',
+        commissionData.VendorID || 0,
         commissionId
     ];
 
@@ -83,14 +88,20 @@ const getCommissionById = async (commissionId) => {
 // Get all commissions
 const getAllCommissions = async () => {
     const query = `
-        SELECT commission.*, portals.Name AS portalName
+        SELECT commission.*, 
+               COALESCE(portals.Name, 'N/A') AS portalName, 
+               COALESCE(vendor.name, 'N/A') AS vendorName 
         FROM commission 
-        JOIN portals ON commission.portalId = portals.PortalID 
+        LEFT JOIN portals ON commission.portalId = portals.PortalID
+        LEFT JOIN vendor ON commission.VendorID = vendor.id;
     `;
 
     return new Promise((resolve, reject) => {
         dbconnection.query(query, (error, results) => {
-            if (error) return reject(error);
+            if (error) {
+                console.error("Error fetching commissions:", error); // Log the error for debugging
+                return reject(error);
+            }
             resolve(results);
         });
     });

@@ -62,10 +62,10 @@ const updateTransactionNo = async (req, res) => {
 const getAllMoneyTransfers = async (req, res) => {
     try {
         // Extract query parameters
-        const { fromDate, toDate, portalId } = req.query;
+        const { fromDate, toDate, portalId, VendorID } = req.query;
 
         // Call the service with optional date and portalId parameters
-        const result = await moneyTransferService.getAllMoneyTransfers(fromDate, toDate, portalId);
+        const result = await moneyTransferService.getAllMoneyTransfers(fromDate, toDate, portalId, VendorID);
 
         res.status(200).json(result);
     } catch (error) {

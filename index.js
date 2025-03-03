@@ -23,7 +23,7 @@ const commissionRoutes = require('./routes/commissionRoutes');
 const moneyTransferRoutes = require('./routes/moneyTransferRoutes');
 const portalRoutes = require('./routes/portalRoutes');
 const aepsRoutes = require('./routes/aepsmoneytransferRoutes');
-const userRoutes = require('./routes/users.routes');
+const vendorRoutes = require('./routes/vendorRoutes');
 const servicesRoutes = require('./routes/services.routes');
 const salesRoutes = require('./routes/salesRoutes');
 
@@ -34,7 +34,7 @@ app.use('/api/commission', commissionRoutes);
 app.use('/api/moneyTransfer', moneyTransferRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/aeps', aepsRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/user', vendorRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/sales', salesRoutes);
 
