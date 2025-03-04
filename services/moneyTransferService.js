@@ -92,9 +92,9 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         console.log('TransferID:', TransferID);
         console.log('TransactionNo:', TransactionNo);
 
-        // Step 1: Get TotalCash and portalId from moneytransfer table
+        // Step 1: Get BankDeposit, portalId, and vendorID from moneytransfer table
         const query1 = `
-            SELECT BankDeposit, portalId
+            SELECT BankDeposit, portalId, vendorID
             FROM moneytransfer
             WHERE TransferID = ?`;
 
@@ -113,15 +113,10 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        const { BankDeposit, portalId } = result1;
-        console.log('BankDeposit:', BankDeposit, 'portalId:', portalId);
+        const { BankDeposit, portalId, vendorID } = result1;
 
         // Step 2: Get the current balance from the portals table
-        const query2 = `
-            SELECT balance
-            FROM portals
-            WHERE portalId = ?`;
-
+        const query2 = `SELECT balance FROM portals WHERE portalId = ?`;
         const values2 = [portalId];
 
         const result2 = await new Promise((resolve, reject) => {
@@ -138,41 +133,76 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         });
 
         const { balance } = result2;
-        console.log('Current balance:', balance);
 
-        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract BankDeposit
+        // Step 3: Check if balance exists and is sufficient
         if (balance === null || balance === undefined) {
             return Promise.reject(new Error('No balance found in the portal'));
         }
-
-        // Check if the balance is sufficient
         if (balance < BankDeposit) {
             return Promise.reject(new Error('Insufficient balance in the portal'));
         }
 
-        // Step 4: Calculate the new balance and update it
+        // Step 4: Update vendor balances if vendorID > 0
+        if (vendorID > 0) {
+            const queryVendor = `SELECT virtual_balance, main_balance FROM vendor WHERE id = ?`;
+            const valuesVendor = [vendorID];
+
+            const resultVendor = await new Promise((resolve, reject) => {
+                dbconnection.query(queryVendor, valuesVendor, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.length === 0) {
+                        return reject(new Error('vendorID not found in vendor table'));
+                    }
+                    resolve(results[0]);
+                });
+            });
+
+            let { virtual_balance, main_balance } = resultVendor;
+
+            // Deduct BankDeposit from both virtual_balance and main_balance
+            virtual_balance -= BankDeposit;
+            main_balance -= BankDeposit;
+
+            const queryUpdateVendor = `
+                UPDATE vendor
+                SET virtual_balance = ?, main_balance = ?
+                WHERE id = ?`;
+            const valuesUpdateVendor = [virtual_balance, main_balance, vendorID];
+
+            await new Promise((resolve, reject) => {
+                dbconnection.query(queryUpdateVendor, valuesUpdateVendor, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.affectedRows === 0) {
+                        return reject(new Error('vendorID not found or no rows affected in vendor table'));
+                    }
+                    resolve();
+                });
+            });
+
+            // Log vendor balance update
+            const vendorLogData = {
+                vendorID: vendorID,
+                beforeVirtualBalance: resultVendor.virtual_balance,
+                afterVirtualBalance: virtual_balance,
+                beforeMainBalance: resultVendor.main_balance,
+                afterMainBalance: main_balance,
+                transactionType: 'money_transfer',
+                createdAt: new Date()
+            };
+
+            // await addVendorLog(vendorLogData); // Log vendor transaction (assumed function)
+        }
+
+        // Step 5: Update portal balance
         const newBalance = balance - BankDeposit;
-        console.log('New balance:', newBalance);
 
-        // Prepare log data
-        const logData = {
-            portalId: portalId,
-            beforeBalance: balance, // Initial balance before any transaction
-            balance: BankDeposit,
-            type: 'Remove Balance',
-            transactionType: 'money_transfer',
-            afterBalance: newBalance,
-            createdAt: new Date()
-        };
-
-        await addPortalLog(logData);
-
-        // Update the portals table with the new balance
-        const query3 = `
-            UPDATE portals
-            SET balance = ?
-            WHERE portalId = ?`;
-
+        const query3 = `UPDATE portals SET balance = ? WHERE portalId = ?`;
         const values3 = [newBalance, portalId];
 
         await new Promise((resolve, reject) => {
@@ -188,12 +218,21 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        // Step 5: Update the moneytransfer table with the new TransactionNo
-        const query4 = `
-            UPDATE moneytransfer
-            SET TransactionNo = ?
-            WHERE TransferID = ?`;
+        // Log portal balance update
+        const portalLogData = {
+            portalId: portalId,
+            beforeBalance: balance,
+            balance: BankDeposit,
+            type: 'Remove Balance',
+            transactionType: 'money_transfer',
+            afterBalance: newBalance,
+            createdAt: new Date()
+        };
 
+        await addPortalLog(portalLogData); // Log portal transaction
+
+        // Step 6: Update the moneytransfer table with the new TransactionNo
+        const query4 = `UPDATE moneytransfer SET TransactionNo = ? WHERE TransferID = ?`;
         const values4 = [TransactionNo, TransferID];
 
         await new Promise((resolve, reject) => {
@@ -209,12 +248,13 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        return { message: 'TransactionNo updated successfully and balance adjusted', affectedRows: 1 };
+        return { message: 'TransactionNo updated successfully and balances adjusted', affectedRows: 1 };
     } catch (error) {
         console.error('Error:', error);
         throw error;
     }
 };
+
 // Portal Logs
 const addPortalLog = async (logData) => {
     const query = `

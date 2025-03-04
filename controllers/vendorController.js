@@ -47,3 +47,51 @@ exports.deleteVendor = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.updateVendorBalance = async (req, res) => {
+    try {
+        const vendorId = req.params.id;
+        const vendorData = req.body;
+        const result = await vendorService.updateVendorBalance(vendorId, vendorData);
+        res.status(200).json({ message: 'Vendor balance updated successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.transferVirtualBalanceToPortal = async (req, res) => {
+    try {
+        const { vendorId, portalId, transferAmount } = req.body;
+
+        if (!vendorId || !portalId || !transferAmount) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        const result = await vendorService.transferVirtualBalanceToPortal(vendorId, portalId, transferAmount);
+
+        res.status(200).json({ message: "Balance transferred successfully", data: result });
+
+    } catch (error) {
+        res.status(500).json({ message: "Error transferring balance", error: error.message });
+    }
+};
+
+exports.addVendorLog = async (req, res) => {
+    try {
+        const Data = req.body;
+        const result = await vendorService.addVendorLog(Data);
+        res.status(201).json({ message: 'Vendor logs added successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getVendorLogsById = async (req, res) => {
+    try {
+        const vendorId = req.params.id;
+        const result = await vendorService.getVendorLogsById(vendorId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
