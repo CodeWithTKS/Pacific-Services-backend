@@ -185,18 +185,17 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
                 });
             });
 
-            // Log vendor balance update
-            const vendorLogData = {
-                vendorID: vendorID,
-                beforeVirtualBalance: resultVendor.virtual_balance,
-                afterVirtualBalance: virtual_balance,
-                beforeMainBalance: resultVendor.main_balance,
-                afterMainBalance: main_balance,
-                transactionType: 'money_transfer',
+            // Log vendor transaction
+            const logData = {
+                vendorId: vendorID,
+                beforeBalance: resultVendor.main_balance,
+                balance: BankDeposit,
+                type: 'Remove Money Transfer',
+                afterBalance: main_balance,
                 createdAt: new Date()
             };
-
-            // await addVendorLog(vendorLogData); // Log vendor transaction (assumed function)
+            
+            await addVendorLog(logData);
         }
 
         // Step 5: Update portal balance
@@ -253,6 +252,30 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         console.error('Error:', error);
         throw error;
     }
+};
+
+// vendor Logs
+const addVendorLog = async (logData) => {
+    const query = `
+        INSERT INTO vendor_logs 
+        (vendor_id, before_balance, balance, type, after_balance, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?)`;
+
+    const values = [
+        logData.vendorId,
+        logData.beforeBalance,
+        logData.balance,
+        logData.type,
+        logData.afterBalance,
+        logData.createdAt || new Date()
+    ];
+
+    return new Promise((resolve, reject) => {
+        dbconnection.query(query, values, (error, results) => {
+            if (error) return reject(error);
+            resolve({ LogID: results.insertId });
+        });
+    });
 };
 
 // Portal Logs
