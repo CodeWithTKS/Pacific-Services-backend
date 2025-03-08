@@ -5,9 +5,9 @@ const addMoneyTransfer = async (transferData) => {
     const query = `
         INSERT INTO moneytransfer 
         (portalId, VendorID, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
-        Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, FixedAmt, 
+        Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, Discount, FixedAmt, 
         BankCharge, Extra, BankDeposit, CustDeposit)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
@@ -27,6 +27,7 @@ const addMoneyTransfer = async (transferData) => {
         transferData.Cash5 || 0,
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
+        transferData.Discount || 0.00,
         transferData.FixedAmt || 0.00,
         transferData.BankCharge || 0.00,
         transferData.Extra || 0.00,
@@ -48,7 +49,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         UPDATE moneytransfer 
         SET portalId = ?, VendorID = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
-        Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, FixedAmt = ?, BankCharge = ?,
+        Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, Discount = ?, FixedAmt = ?, BankCharge = ?,
         Extra = ?, BankDeposit = ?, CustDeposit = ? 
         WHERE TransferID = ?`;
 
@@ -70,6 +71,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.Cash5 || 0,
         transferData.TotalCash || 0.00,
         transferData.CollectionAmt || 0.00,
+        transferData.Discount || 0.00,
         transferData.FixedAmt || 0.00,
         transferData.BankCharge || 0.00,
         transferData.Extra || 0.00,
@@ -194,7 +196,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
                 afterBalance: main_balance,
                 createdAt: new Date()
             };
-            
+
             await addVendorLog(logData);
         }
 
