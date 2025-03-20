@@ -35,30 +35,43 @@ const getSales = async (fromDate, toDate) => {
             // Process each sale to fetch the service names
             const salesWithServices = salesResults.map(async (sale) => {
                 // Parse the services JSON string into an array
-                const services = JSON.parse(sale.services);
+                let services = JSON.parse(sale.services);
 
-                // Fetch service names based on serviceId from the services table
-                const serviceIds = services.map(service => service.serviceId);
-                const serviceQuery = `SELECT id, service_name FROM services WHERE id IN (${serviceIds.join(', ')})`;
+                // Separate service entries that have serviceId from those that don't
+                const servicesWithId = services.filter(service => service.serviceId);
+                const servicesWithoutId = services.filter(service => !service.serviceId);
 
-                return new Promise((resolveServices, rejectServices) => {
-                    db.query(serviceQuery, (error, serviceResults) => {
-                        if (error) return rejectServices(error);
+                if (servicesWithId.length > 0) {
+                    // Fetch service names based on serviceId from the services table
+                    const serviceIds = servicesWithId.map(service => service.serviceId);
+                    const serviceQuery = `SELECT id, service_name FROM services WHERE id IN (${serviceIds.join(', ')})`;
 
-                        // Map service names to the respective services in the sale
-                        const servicesWithNames = services.map(service => {
-                            const serviceName = serviceResults.find(s => s.id === service.serviceId)?.service_name;
-                            return { ...service, service_name: serviceName };
-                        });
+                    return new Promise((resolveServices, rejectServices) => {
+                        db.query(serviceQuery, (error, serviceResults) => {
+                            if (error) return rejectServices(error);
 
-                        // Return the updated sale with services and user name
-                        resolveServices({
-                            ...sale,
-                            user_name: sale.user_name, // Add the user name here
-                            services: servicesWithNames
+                            // Map service names to the respective services in the sale
+                            const updatedServices = servicesWithId.map(service => {
+                                const serviceName = serviceResults.find(s => s.id === service.serviceId)?.service_name;
+                                return { ...service, service_name: serviceName };
+                            });
+
+                            // Combine updated services with the ones that had no serviceId
+                            resolveServices({
+                                ...sale,
+                                user_name: sale.user_name, // Add the user name here
+                                services: [...updatedServices, ...servicesWithoutId] // Merge both lists
+                            });
                         });
                     });
-                });
+                } else {
+                    // If no serviceId is present, return the sale with unchanged services
+                    return {
+                        ...sale,
+                        user_name: sale.user_name, // Add the user name here
+                        services: servicesWithoutId
+                    };
+                }
             });
 
             // Resolve all sales and services
@@ -158,6 +171,89 @@ const createSale = async (sale) => {
     }
 };
 
+const createManualSale = async (sale) => {
+    const queryInsertSale = `INSERT INTO sales (name, phone, paymentType, services, subtotal_price, total_price) VALUES (?, ?, ?, ?, ?, ?)`;
+    const queryUpdateBalance = `UPDATE portals SET Balance = Balance - ? WHERE PortalID = ?`;
+    const queryGetBalance = `SELECT Balance FROM portals WHERE PortalID = ?`;
+
+    const { name, phone, paymentType, services, subtotal_price, total_price } = sale;
+
+    try {
+        // Step 1: Validate and calculate amounts
+        for (const service of services) {
+            service.amount = service.price - service.discount - service.commission_price;
+
+            if (service.amount < 0) {
+                throw new Error(`Invalid amount calculated for service ${service.service_name}`);
+            }
+
+            const { portalId, amount } = service;
+            const result = await new Promise((resolve, reject) => {
+                db.query(queryGetBalance, [portalId], (error, results) => {
+                    if (error) return reject(error);
+                    if (results.length === 0) return reject(new Error(`Portal ${portalId} not found`));
+                    resolve(results[0]);
+                });
+            });
+
+            if (result.Balance < amount) {
+                throw new Error(`Insufficient balance in portal ${portalId}`);
+            }
+        }
+
+        // Step 2: Deduct balance and log transactions
+        for (const service of services) {
+            const { portalId, amount } = service;
+
+            // Get current balance
+            const result = await new Promise((resolve, reject) => {
+                db.query(queryGetBalance, [portalId], (error, results) => {
+                    if (error) return reject(error);
+                    resolve(results[0]);
+                });
+            });
+
+            const currentBalance = result.Balance;
+            const newBalance = currentBalance - amount;
+
+            // Log transaction
+            const logData = {
+                portalId,
+                beforeBalance: currentBalance,
+                balance: amount,
+                type: 'Remove Balance',
+                transactionType: 'Services_Transfer',
+                afterBalance: newBalance,
+                createdAt: new Date()
+            };
+
+            await addPortalLog(logData);
+
+            // Update balance
+            await new Promise((resolve, reject) => {
+                db.query(queryUpdateBalance, [amount, portalId], (error, results) => {
+                    if (error) return reject(error);
+                    resolve(results);
+                });
+            });
+        }
+
+        // Step 3: Insert sale into the sales table
+        const saleResult = await new Promise((resolve, reject) => {
+            db.query(queryInsertSale, [name, phone, paymentType, JSON.stringify(services), subtotal_price, total_price], (error, results) => {
+                if (error) return reject(error);
+                resolve(results.insertId);
+            });
+        });
+
+        // Step 4: Return success response
+        return { message: 'Sale created and balances updated successfully', saleId: saleResult };
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+};
+
 // Portal Logs
 const addPortalLog = async (logData) => {
     const query = `
@@ -188,11 +284,11 @@ const addPortalLog = async (logData) => {
 const updateSale = async (id, sale) => {
     const query = `
         UPDATE sales 
-        SET name = ?, services = ?, total_price = ? 
+        SET name = ?, phone = ?, paymentType = ?, services = ?, subtotal_price = ?, total_price = ? 
         WHERE id = ?`;
-    const { name, services, total_price } = sale;
+    const { name, phone, paymentType, services, subtotal_price, total_price } = sale;
     return new Promise((resolve, reject) => {
-        db.query(query, [name, JSON.stringify(services), total_price, id], (error, results) => {
+        db.query(query, [name, phone, paymentType, JSON.stringify(services), total_price, subtotal_price, id], (error, results) => {
             if (error) return reject(error);
             resolve(results.affectedRows > 0);
         });
@@ -216,4 +312,5 @@ module.exports = {
     createSale,
     updateSale,
     deleteSale,
+    createManualSale
 };
