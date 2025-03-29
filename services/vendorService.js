@@ -182,8 +182,8 @@ const transferVirtualBalanceToPortal = async (vendorId, portalId, transferAmount
             portalId: portalId, // Ensure it's not undefined
             beforeBalance: beforeBalance,
             balance: transferAmount,
-            type: "Add Balance",
-            transactionType: "balance_from_vendor",
+            type: "balance_from_vendor",
+            transactionType: "Add Balance",
             afterBalance: afterBalance,
             createdAt: new Date()
         };

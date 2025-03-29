@@ -35,6 +35,7 @@ const addPortal = async (portalData) => {
                 beforeBalance: 0.00, // Initial balance before any transaction
                 balance: initialBalance,
                 type: 'Add Balance',
+                transactionType: 'portal create',
                 afterBalance: initialBalance,
                 createdAt: new Date()
             };
@@ -56,14 +57,15 @@ const addPortal = async (portalData) => {
 const addPortalLog = async (logData) => {
     const query = `
         INSERT INTO portal_logs 
-        (portal_id, before_balance, balance, type, after_balance, createdAt)
-        VALUES (?, ?, ?, ?, ?, ?)`;
+        (portal_id, before_balance, balance, type, transactionType, after_balance, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         logData.portalId,
         logData.beforeBalance,
         logData.balance,
         logData.type,
+        logData.transactionType,
         logData.afterBalance,
         logData.createdAt || new Date()
     ];
@@ -153,7 +155,7 @@ const getPortalLogsById = async (portalId) => {
     JOIN portals ON portal_logs.portal_id = portals.PortalID
     WHERE portal_logs.portal_id = ?
     ORDER BY portal_logs.createdAt DESC`;
-    
+
     return new Promise((resolve, reject) => {
         dbconnection.query(query, [portalId], (error, results) => {
             if (error) return reject(error);

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 08, 2025 at 05:49 AM
+-- Generation Time: Mar 29, 2025 at 02:25 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,12 +31,14 @@ CREATE TABLE `aepsmoneytransfer` (
   `TransferID` int(11) NOT NULL,
   `TransactionNo` varchar(50) DEFAULT NULL,
   `portalId` varchar(255) NOT NULL,
+  `VendorID` int(11) NOT NULL DEFAULT 0,
   `ACNo` varchar(50) NOT NULL,
   `LastName` varchar(255) DEFAULT NULL,
   `TransactionDate` datetime NOT NULL,
   `TransactionType` varchar(255) NOT NULL,
   `OtherType` varchar(255) DEFAULT NULL,
   `OtherName` varchar(255) DEFAULT NULL,
+  `passbookIssue` varchar(255) DEFAULT NULL,
   `FirstName` varchar(255) NOT NULL,
   `ContactNo` varchar(20) NOT NULL,
   `IFSCNo` varchar(20) DEFAULT NULL,
@@ -54,6 +56,10 @@ CREATE TABLE `aepsmoneytransfer` (
   `Extra` decimal(15,2) DEFAULT 0.00,
   `BankDeposit` decimal(15,2) DEFAULT 0.00,
   `CustDeposit` decimal(15,2) DEFAULT 0.00,
+  `AOB` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `PendingAmount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `ReceivedAmount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `HighlightEntry` tinyint(1) NOT NULL,
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -61,12 +67,35 @@ CREATE TABLE `aepsmoneytransfer` (
 -- Dumping data for table `aepsmoneytransfer`
 --
 
-INSERT INTO `aepsmoneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `ACNo`, `LastName`, `TransactionDate`, `TransactionType`, `OtherType`, `OtherName`, `FirstName`, `ContactNo`, `IFSCNo`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `FixedAmt`, `BankCharge`, `Extra`, `BankDeposit`, `CustDeposit`, `CreatedAt`) VALUES
-(1, 'aeps001', '1', '1201', 'Chavda', '2025-02-02 18:30:00', 'aeps_withdrawal', NULL, NULL, 'Krupalsinh', '7600230620', 'dsdsd', 2, 0, 0, 0, 0, 0, 0, 1000.00, 1000.00, 20.00, 12.00, 8.00, 992.00, 980.00, '2025-02-02 12:26:59'),
-(3, 'aeps002', '1', '451265842', 'kumar', '2025-02-02 18:30:00', 'other', 'debit', 'kuch bhi', 'Hero', '9815146345', 'dsdsd3', 0, 5, 0, 0, 0, 0, 0, 500.00, 500.00, 0.00, 0.00, 20.00, 0.00, 480.00, '2025-02-03 05:36:50'),
-(4, 'aeps003', '3', '255165651323', 'jdjsd', '2025-02-03 18:30:00', 'other', 'debit', 'cut', 'tjsdk', '5254274121', 'dsds', 0, 10, 0, 0, 0, 0, 0, 1000.00, 1000.00, 0.00, 0.00, 80.00, 0.00, 920.00, '2025-02-03 06:25:20'),
-(5, '32332', '1', '212122', 'dsd', '2025-02-18 04:44:41', 'aeps_withdrawal', NULL, NULL, 'ds', '2121221222', 'dsq3', 10, 0, 0, 0, 0, 0, 0, 5000.00, 5000.00, 0.00, 0.00, 50.00, 0.00, 0.00, '2025-02-18 04:47:26'),
-(6, '44r436', '2', '3232332', 'dsds', '2025-02-18 09:42:50', 'aeps_withdrawal', NULL, NULL, 'dsd', '3323232332', 'ccew', 100, 0, 0, 0, 0, 0, 0, 50000.00, 50000.00, 0.00, 0.00, 400.00, 0.00, 0.00, '2025-02-18 09:43:33');
+INSERT INTO `aepsmoneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `VendorID`, `ACNo`, `LastName`, `TransactionDate`, `TransactionType`, `OtherType`, `OtherName`, `passbookIssue`, `FirstName`, `ContactNo`, `IFSCNo`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `FixedAmt`, `BankCharge`, `Extra`, `BankDeposit`, `CustDeposit`, `AOB`, `PendingAmount`, `ReceivedAmount`, `HighlightEntry`, `CreatedAt`) VALUES
+(11, 'aeps_withdrawal01', '1', 0, '20202020', 'chavda', '2025-03-29 05:27:33', 'aeps_withdrawal', NULL, NULL, '', 'krupalsinh', '7600230620', 'dd00', 1, 0, 0, 1, 0, 0, 0, 520.00, 520.00, 0.00, 0.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, '2025-03-29 05:28:18'),
+(12, 'cif/ac/wid', '1', 0, '101010', 'test', '2025-03-29 05:30:50', 'cif_ac_wid', NULL, NULL, '', 'test', '7474747474', '747474', 0, 3, 0, 0, 1, 1, 0, 315.00, 315.00, 0.00, 0.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, '2025-03-29 05:31:25'),
+(13, 'accopen', '1', 0, '3232323', 'dsd', '2025-03-29 05:33:23', 'account_opening', NULL, NULL, 'Pending', 'ddsd', '3232323233', '333', 0, 2, 0, 0, 0, 0, 0, 200.00, 200.00, 0.00, 0.00, 99.00, 0.00, 0.00, 101.00, 50.00, 150.00, 1, '2025-03-29 05:34:05'),
+(14, 'atm dipo', '1', 0, '323233', 'fdf', '2025-03-29 05:34:37', 'atm_ac_dip', NULL, NULL, '', 'fdfd', '3434343444', 'fd4', 1, 0, 0, 1, 0, 0, 0, 520.00, 520.00, 0.00, 0.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 1, '2025-03-29 05:35:16'),
+(15, 'aob', '2', 0, '741741741', 'vhhvh', '2025-03-29 06:10:04', 'account_opening', NULL, NULL, 'Pending', 'hjhvj', '7474747474', '100', 0, 3, 0, 0, 0, 0, 0, 300.00, 300.00, 0.00, 0.00, 99.00, 0.00, 0.00, 201.00, 200.00, 100.00, 1, '2025-03-29 06:11:08');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cashback`
+--
+
+CREATE TABLE `cashback` (
+  `id` int(11) NOT NULL,
+  `portalId` int(11) NOT NULL,
+  `balance` decimal(10,2) NOT NULL,
+  `remark` varchar(255) DEFAULT NULL,
+  `date` datetime DEFAULT current_timestamp(),
+  `type` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cashback`
+--
+
+INSERT INTO `cashback` (`id`, `portalId`, `balance`, `remark`, `date`, `type`) VALUES
+(7, 1, 11.00, 'test cashback', '2025-03-29 10:54:53', 'Cash'),
+(8, 2, 100.00, 'testcash', '2025-03-29 11:37:10', 'Cash');
 
 -- --------------------------------------------------------
 
@@ -103,7 +132,55 @@ INSERT INTO `commission` (`CommissionID`, `portalId`, `FromAmount`, `ToAmount`, 
 (6, '2', 1.00, 1020.00, 'no', 0.00, NULL, NULL, 20.00, 5.00, 15.00, 'Fixed', 'self', 0, '2025-01-03 14:48:44'),
 (7, '3', 1.00, 1020.00, 'no', 0.00, NULL, NULL, 20.00, 10.00, 10.00, 'Fixed', 'self', 0, '2025-01-05 06:28:11'),
 (8, '3', 1021.00, 2040.00, 'no', 20.00, 5.60, NULL, 20.00, 1.12, 18.88, 'Percentage', 'self', 0, '2025-01-06 05:36:51'),
-(9, '1', 1.00, 1015.00, 'no', 0.00, NULL, NULL, 15.00, 5.00, 10.00, 'Fixed', 'vendor', 1, '2025-03-03 06:05:37');
+(9, '1', 1.00, 1015.00, 'no', 0.00, NULL, NULL, 15.00, 5.00, 10.00, 'Fixed', 'vendor', 1, '2025-03-03 06:05:37'),
+(12, '3', 1.00, 100000.00, 'no', 0.00, 0.30, NULL, 0.00, 0.00, 0.00, 'Percentage', 'vendor', 4, '2025-03-12 06:42:12'),
+(13, '1', 1.00, 10000.00, 'no', 0.00, 0.30, NULL, 0.00, 0.00, 0.00, 'Percentage', 'vendor', 4, '2025-03-12 12:24:07'),
+(14, '4', 1.00, 1015.00, 'no', 0.00, NULL, NULL, 15.00, 0.00, 15.00, 'Fixed', 'self', 0, '2025-03-27 08:37:37'),
+(15, '4', 1016.00, 2030.00, 'no', 0.00, NULL, NULL, 30.00, 0.00, 30.00, 'Fixed', 'self', 0, '2025-03-27 08:37:54'),
+(16, '4', 2031.00, 3040.00, 'no', 0.00, NULL, NULL, 40.00, 0.00, 40.00, 'Fixed', 'self', 0, '2025-03-27 08:38:19'),
+(17, '4', 3041.00, 4050.00, 'no', 0.00, NULL, NULL, 50.00, 0.00, 50.00, 'Fixed', 'self', 0, '2025-03-27 08:39:16'),
+(18, '4', 4051.00, 5060.00, 'no', 0.00, NULL, NULL, 60.00, 0.00, 60.00, 'Fixed', 'self', 0, '2025-03-27 08:39:38'),
+(19, '4', 5061.00, 6075.00, 'no', 0.00, NULL, NULL, 75.00, 0.00, 75.00, 'Fixed', 'self', 0, '2025-03-27 08:40:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fundtransfer`
+--
+
+CREATE TABLE `fundtransfer` (
+  `TransferID` int(11) NOT NULL,
+  `TransactionNo` varchar(50) DEFAULT NULL,
+  `portalId` varchar(255) NOT NULL,
+  `FirstName` varchar(255) NOT NULL,
+  `LastName` varchar(255) DEFAULT NULL,
+  `TransactionDate` datetime NOT NULL,
+  `ContactNo` varchar(20) NOT NULL,
+  `IFSCNo` varchar(20) DEFAULT NULL,
+  `customerUID` varchar(50) NOT NULL,
+  `beneficiaryUID` varchar(50) NOT NULL,
+  `TransactionType` varchar(50) NOT NULL,
+  `TransactionCategory` enum('Credit','Debit') NOT NULL,
+  `Cash500` int(11) DEFAULT 0,
+  `Cash100` int(11) DEFAULT 0,
+  `Cash50` int(11) DEFAULT 0,
+  `Cash20` int(11) DEFAULT 0,
+  `Cash10` int(11) DEFAULT 0,
+  `Cash5` int(11) DEFAULT 0,
+  `Cash1` int(11) DEFAULT 0,
+  `TotalCash` decimal(15,2) DEFAULT 0.00,
+  `CollectionAmt` decimal(15,2) DEFAULT 0.00,
+  `Extra` decimal(15,2) DEFAULT 0.00,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `HighlightEntry` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `fundtransfer`
+--
+
+INSERT INTO `fundtransfer` (`TransferID`, `TransactionNo`, `portalId`, `FirstName`, `LastName`, `TransactionDate`, `ContactNo`, `IFSCNo`, `customerUID`, `beneficiaryUID`, `TransactionType`, `TransactionCategory`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `Extra`, `CreatedAt`, `HighlightEntry`) VALUES
+(1, 'benitest', '1', 'krupalsinh', '', '2025-03-29 06:46:18', '7600230620', 'dsd', '414141', '5', 'AEPS', 'Credit', 2, 0, 0, 1, 0, 0, 0, 1020.00, 1020.00, 20.00, '2025-03-29 12:16:59', 0);
 
 -- --------------------------------------------------------
 
@@ -117,15 +194,56 @@ CREATE TABLE `login` (
   `password` varchar(255) NOT NULL,
   `role` enum('Admin','User','Manager') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `subscription_status` enum('Active','Expired','Pending') NOT NULL DEFAULT 'Pending',
+  `subscription_expiry` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `login`
 --
 
-INSERT INTO `login` (`login_id`, `email`, `password`, `role`, `created_at`, `updated_at`) VALUES
-(1, 'user@example.com', '$2a$10$oyQMqq06ACQjgDsxriA1MuHb2QYDu2OXDs9I3jH7jZqEIaD4nGd3G', 'Admin', '2024-10-27 07:48:07', '2024-10-27 07:48:07');
+INSERT INTO `login` (`login_id`, `email`, `password`, `role`, `created_at`, `updated_at`, `subscription_status`, `subscription_expiry`) VALUES
+(1, 'user@example.com', '$2a$10$oyQMqq06ACQjgDsxriA1MuHb2QYDu2OXDs9I3jH7jZqEIaD4nGd3G', 'Admin', '2024-10-27 07:48:07', '2024-10-27 07:48:07', 'Pending', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mobiletransfer`
+--
+
+CREATE TABLE `mobiletransfer` (
+  `TransferID` int(11) NOT NULL,
+  `TransactionNo` varchar(50) DEFAULT NULL,
+  `portalId` varchar(255) NOT NULL,
+  `FirstName` varchar(255) NOT NULL,
+  `LastName` varchar(255) DEFAULT NULL,
+  `TransactionDate` datetime NOT NULL,
+  `ContactNo` varchar(20) NOT NULL,
+  `TransferType` varchar(50) NOT NULL,
+  `TransactionType` varchar(50) NOT NULL,
+  `TransactionCategory` enum('Credit','Debit') NOT NULL,
+  `Cash500` int(11) DEFAULT 0,
+  `Cash100` int(11) DEFAULT 0,
+  `Cash50` int(11) DEFAULT 0,
+  `Cash20` int(11) DEFAULT 0,
+  `Cash10` int(11) DEFAULT 0,
+  `Cash5` int(11) DEFAULT 0,
+  `Cash1` int(11) DEFAULT 0,
+  `TotalCash` decimal(15,2) DEFAULT 0.00,
+  `CollectionAmt` decimal(15,2) DEFAULT 0.00,
+  `Extra` decimal(15,2) DEFAULT 0.00,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `HighlightEntry` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `mobiletransfer`
+--
+
+INSERT INTO `mobiletransfer` (`TransferID`, `TransactionNo`, `portalId`, `FirstName`, `LastName`, `TransactionDate`, `ContactNo`, `TransferType`, `TransactionType`, `TransactionCategory`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `Extra`, `CreatedAt`, `HighlightEntry`) VALUES
+(2, 'google credit', '1', 'krupalsinh', '', '2025-03-29 05:36:24', '7600230620', 'Google Pay', 'MobileNo', 'Credit', 10, 0, 0, 0, 0, 0, 0, 5000.00, 5000.00, 0.00, '2025-03-29 05:37:05', 0),
+(3, 'googlecash', '2', 'hgghhggh', '', '2025-03-29 06:11:50', '7600230620', 'Google Pay', 'QR', 'Credit', 1, 0, 0, 1, 0, 0, 0, 520.00, 520.00, 20.00, '2025-03-29 06:12:11', 0);
 
 -- --------------------------------------------------------
 
@@ -159,24 +277,19 @@ CREATE TABLE `moneytransfer` (
   `Extra` decimal(15,2) DEFAULT 0.00,
   `BankDeposit` decimal(15,2) DEFAULT 0.00,
   `CustDeposit` decimal(15,2) DEFAULT 0.00,
-  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+  `comments` varchar(255) DEFAULT NULL,
+  `self` tinyint(1) DEFAULT 0,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `HighlightEntry` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `moneytransfer`
 --
 
-INSERT INTO `moneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `VendorID`, `ACNo`, `LastName`, `TransactionDate`, `FirstName`, `ContactNo`, `IFSCNo`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `Discount`, `FixedAmt`, `BankCharge`, `Extra`, `BankDeposit`, `CustDeposit`, `CreatedAt`) VALUES
-(1, '124421', '1', 0, '010121121', 'Chavda', '2024-12-31 12:06:15', 'Krupalsinh', '7600230620', 'SBINaroda002', 4, 0, 0, 0, 3, 0, 0, 2030.00, 2030.00, 0.00, 30.00, 24.00, 6.00, 2024.00, 2000.00, '2025-01-03 10:55:44'),
-(2, '854721', '1', 0, '7894564125', 'Vaishnani', '2025-01-01 12:06:29', 'Drashti', '9664524393', 'SBINaorda202', 5, 0, 0, 2, 0, 0, 0, 2540.00, 2540.00, 0.00, 40.00, 36.00, 4.00, 2536.00, 2500.00, '2025-01-03 14:25:25'),
-(3, NULL, '2', 0, '7878454125', 'Chavda', '2025-01-03 12:06:36', 'Ajitsinh', '9924560775', 'AUNaroda002', 0, 8, 0, 0, 2, 0, 0, 820.00, 820.00, 0.00, 20.00, 5.00, 15.00, 805.00, 800.00, '2025-01-03 15:20:13'),
-(4, NULL, '3', 0, '451203010', 'Solanki', '2025-01-04 18:30:00', 'Aasha', '9656324112', 'HDFCkalu231', 0, 5, 0, 0, 2, 0, 0, 520.00, 520.00, 0.00, 20.00, 10.00, 10.00, 510.00, 500.00, '2025-01-05 06:35:05'),
-(5, 'testnovendor', '3', 0, '7811521', 'ranavat', '2025-01-06 18:30:00', 'Nandaben', '9645235425', 'sdsdsd', 3, 0, 0, 0, 2, 0, 0, 1520.00, 1520.00, 0.00, 20.00, 1.12, 18.88, 1501.12, 1500.00, '2025-01-06 05:39:29'),
-(6, 'jbjbkj221', '1', 0, '551155', 'nnhjhvhh', '2025-01-04 18:30:00', 'hjbhjbj', '4454524454', ' n n', 1, 0, 0, 0, 2, 0, 0, 520.00, 520.00, 0.00, 20.00, 12.00, 8.00, 512.00, 500.00, '2025-01-06 17:06:56'),
-(7, '655g4', '1', 0, '555556', 'ghghhg', '2025-02-18 09:40:07', 'ghgh', '6565656565', 'bmm66', 5, 0, 0, 0, 0, 0, 0, 2500.00, 2500.00, 0.00, 40.00, 36.00, 4.00, 2496.00, 2460.00, '2025-02-18 09:41:53'),
-(8, 'vendor001', '1', 1, '1010110', 'rathod', '2025-03-03 06:56:03', 'aasha', '7541214121', 'sds50', 1, 0, 0, 0, 1, 1, 0, 515.00, 515.00, 0.00, 15.00, 5.00, 10.00, 505.00, 500.00, '2025-03-03 06:56:47'),
-(9, 'eds323', '1', 1, '32323', 'dsd', '2025-03-07 17:05:26', 'dsd', '3232323233', '3ds', 1, 0, 0, 0, 1, 1, 0, 515.00, 515.00, 0.00, 15.00, 5.00, 10.00, 505.00, 500.00, '2025-03-07 17:06:06'),
-(10, 'fdfd', '1', 1, '2122', 'laal', '2025-03-07 17:20:54', 'ketan', '4322664475', 'r43f', 1, 0, 0, 0, 1, 1, 0, 515.00, 515.00, 0.00, 15.00, 5.00, 10.00, 505.00, 500.00, '2025-03-07 17:22:10');
+INSERT INTO `moneytransfer` (`TransferID`, `TransactionNo`, `portalId`, `VendorID`, `ACNo`, `LastName`, `TransactionDate`, `FirstName`, `ContactNo`, `IFSCNo`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `Discount`, `FixedAmt`, `BankCharge`, `Extra`, `BankDeposit`, `CustDeposit`, `comments`, `self`, `CreatedAt`, `HighlightEntry`) VALUES
+(16, 'test money', '1', 0, '10210', 'chavda', '2025-03-29 05:26:17', 'Krupalsinh', '7600230620', '230500', 2, 0, 0, 0, 0, 0, 0, 1000.00, 1000.00, 0.00, 20.00, 12.00, 8.00, 992.00, 980.00, 'test monay', 0, '2025-03-29 05:26:52', 0),
+(17, 'tesrr200', '2', 0, '202220', 'est', '2025-03-29 06:07:27', 'testr', '7600230620', '2120', 1, 0, 0, 1, 0, 0, 0, 520.00, 520.00, 0.00, 20.00, 5.00, 15.00, 505.00, 500.00, '', 0, '2025-03-29 06:08:54', 1);
 
 -- --------------------------------------------------------
 
@@ -205,9 +318,11 @@ CREATE TABLE `portals` (
 --
 
 INSERT INTO `portals` (`PortalID`, `Name`, `Code`, `ContactNo`, `ContactPerson`, `Email`, `ACNo`, `Balance`, `TransactionLimit`, `ServiceTax`, `TDSRate`, `OpeningBalanceDate`, `CreatedAt`) VALUES
-(1, 'SBI', 'SBI001', '7600230620', 'krupalsinh', NULL, '0001223551', 7647.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 10:49:23'),
-(2, 'AU Bank', 'AUBank45', '9998271995', 'Hetal', NULL, '78945641', 53900.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 14:46:27'),
-(3, 'HDFC', 'HDFC003', '7600230620', 'Bhagawan', NULL, '1011011010', 3058.88, 25200.00, 0, 0.00, '2025-01-07', '2025-01-05 06:27:36');
+(1, 'SBI', 'SBI001', '7600230620', 'krupalsinh', NULL, '0001223551', 15077.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 10:49:23'),
+(2, 'AU Bank', 'AUBank45', '9998271995', 'Hetal', NULL, '78945641', 53794.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 14:46:27'),
+(3, 'HDFC', 'HDFC003', '7600230620', 'Bhagawan', NULL, '1011011010', 3061.00, 25200.00, 0, 0.00, '2025-01-07', '2025-01-05 06:27:36'),
+(4, 'SBI LAX', 'SBI', '8778788787', 'LAXM', NULL, '', 47000.00, 20240.00, 0, 0.00, '2025-03-28', '2025-03-27 08:37:11'),
+(5, 'beneficery', 'beni', '7600230620', 'krupal', NULL, '', 11000.00, 0.00, 0, 0.00, '2025-03-30', '2025-03-29 12:45:34');
 
 -- --------------------------------------------------------
 
@@ -231,48 +346,19 @@ CREATE TABLE `portal_logs` (
 --
 
 INSERT INTO `portal_logs` (`id`, `portal_id`, `before_balance`, `balance`, `type`, `after_balance`, `createdAt`, `transactionType`) VALUES
-(1, 1, 0.00, 10000.00, 'Add Balance', 10000.00, '2025-01-03 10:49:23', 'money_transfer'),
-(2, 1, 10000.00, 500.00, 'Add Balance', 10500.00, '2025-01-03 13:35:56', 'money_transfer'),
-(3, 1, 10000.00, 2024.00, 'Remove Balance', 8476.00, '2025-01-03 14:19:23', 'money_transfer'),
-(4, 1, 8476.00, 2536.00, 'Remove Balance', 5940.00, '2025-01-03 14:25:56', 'money_transfer'),
-(5, 2, 0.00, 5000.00, 'Add Balance', 5000.00, '2025-01-03 14:46:27', 'money_transfer'),
-(6, 3, 0.00, 1000.00, 'Add Balance', 1000.00, '2025-01-05 06:27:36', 'money_transfer'),
-(7, 1, 5940.00, 0.00, 'Add Balance', 5940.00, '2025-01-06 00:05:56', 'money_transfer'),
-(8, 1, 5940.00, 0.00, 'Add Balance', 5940.00, '2025-01-06 11:32:10', 'money_transfer'),
-(9, 1, 5940.00, 500.00, 'Add Balance', 6440.00, '2025-01-06 11:32:31', 'money_transfer'),
-(10, 1, 6440.00, 512.00, 'Remove Balance', 5928.00, '2025-01-06 17:08:25', 'money_transfer'),
-(11, 1, 5928.00, 980.00, 'Add Balance', 6908.00, '2025-02-03 03:08:20', 'aeps_withdrawal'),
-(12, 1, 6908.00, 480.00, 'Remove Balance', 6428.00, '2025-02-03 05:36:59', 'other'),
-(13, 3, 1000.00, 920.00, 'Remove Balance', 80.00, '2025-02-03 06:25:43', 'other'),
-(14, 1, 6428.00, 340.00, 'Services_Transfer', 6088.00, '2025-02-11 12:12:00', 'Remove Balance'),
-(15, 1, 6088.00, 120.00, 'Services_Transfer', 5968.00, '2025-02-12 05:39:18', 'Remove Balance'),
-(16, 1, 5968.00, 120.00, 'Services_Transfer', 5848.00, '2025-02-14 14:44:08', 'Remove Balance'),
-(17, 1, 5848.00, 1000.00, 'Add Balance', 6848.00, '2025-02-14 09:42:35', NULL),
-(18, 1, 6848.00, 5000.00, 'Add Balance', 11848.00, '2025-02-18 04:47:41', 'aeps_withdrawal'),
-(19, 3, 80.00, 500.00, 'Add Balance', 580.00, '2025-02-17 23:46:23', NULL),
-(20, 1, 11848.00, 120.00, 'Services_Transfer', 11728.00, '2025-02-18 05:16:56', 'Remove Balance'),
-(21, 2, 5000.00, 220.00, 'Services_Transfer', 4780.00, '2025-02-18 05:16:56', 'Remove Balance'),
-(22, 3, 580.00, 150.00, 'Services_Transfer', 430.00, '2025-02-18 05:16:56', 'Remove Balance'),
-(23, 1, 11728.00, 120.00, 'Services_Transfer', 11608.00, '2025-02-18 05:19:53', 'Remove Balance'),
-(24, 2, 4780.00, 220.00, 'Services_Transfer', 4560.00, '2025-02-18 05:19:53', 'Remove Balance'),
-(25, 3, 430.00, 150.00, 'Services_Transfer', 280.00, '2025-02-18 05:19:53', 'Remove Balance'),
-(26, 2, 4560.00, 220.00, 'Services_Transfer', 4340.00, '2025-02-18 05:22:52', 'Remove Balance'),
-(27, 2, 4340.00, 220.00, 'Services_Transfer', 4120.00, '2025-02-18 05:27:30', 'Remove Balance'),
-(28, 1, 11608.00, 2496.00, 'money_transfer', 9112.00, '2025-02-18 09:42:15', 'Remove Balance'),
-(29, 2, 4120.00, 50000.00, 'Add Balance', 54120.00, '2025-02-18 09:45:32', 'aeps_withdrawal'),
-(31, 1, 9112.00, 120.00, 'Services_Transfer', 8992.00, '2025-02-22 01:45:15', 'Remove Balance'),
-(32, 3, 280.00, 150.00, 'Services_Transfer', 130.00, '2025-02-22 01:58:03', 'Remove Balance'),
-(33, 1, 8992.00, 505.00, 'money_transfer', 8487.00, '2025-03-03 12:16:59', 'Remove Balance'),
-(34, 3, 130.00, 2500.00, 'Add Balance', 2630.00, '2025-03-03 06:48:22', NULL),
-(35, 3, 2630.00, 1501.12, 'money_transfer', 1128.88, '2025-03-03 12:18:49', 'Remove Balance'),
-(36, 1, 8687.00, 100.00, 'Add Balance', 8787.00, '2025-03-04 13:31:40', 'balance_from_vendor'),
-(37, 3, 1128.88, 100.00, 'Add Balance', 1228.88, '2025-03-04 13:33:57', 'balance_from_vendor'),
-(38, 3, 1228.88, 2000.00, 'Add Balance', 3228.88, '2025-03-04 14:09:49', 'balance_from_vendor'),
-(39, 2, 54120.00, 220.00, 'Services_Transfer', 53900.00, '2025-03-04 14:59:52', 'Remove Balance'),
-(40, 1, 8787.00, 130.00, 'Services_Transfer', 8657.00, '2025-03-07 16:52:12', 'Remove Balance'),
-(41, 3, 3228.88, 170.00, 'Services_Transfer', 3058.88, '2025-03-07 16:52:12', 'Remove Balance'),
-(42, 1, 8657.00, 505.00, 'money_transfer', 8152.00, '2025-03-07 17:06:12', 'Remove Balance'),
-(43, 1, 8152.00, 505.00, 'money_transfer', 7647.00, '2025-03-07 17:30:54', 'Remove Balance');
+(63, 1, 10859.00, 11.00, 'Cashback', 10870.00, '2025-03-29 05:24:53', 'Add Balance'),
+(64, 1, 10870.00, 992.00, 'money_transfer', 9878.00, '2025-03-29 05:27:01', 'Remove Balance'),
+(65, 1, 9878.00, 500.00, 'aeps_withdrawal', 10378.00, '2025-03-29 05:28:39', 'Add Balance'),
+(66, 1, 10378.00, 300.00, 'cif_ac_wid', 10678.00, '2025-03-29 05:31:41', 'Add Balance'),
+(67, 1, 10678.00, 101.00, 'account_opening', 10577.00, '2025-03-29 05:34:17', 'Remove Balance'),
+(68, 1, 10577.00, 500.00, 'atm_ac_dip', 10077.00, '2025-03-29 05:35:31', 'Remove Balance'),
+(69, 1, 10077.00, 5000.00, 'mobile transfer', 15077.00, '2025-03-29 05:37:15', 'Add Balance'),
+(70, 2, 53900.00, 100.00, 'Cashback', 54000.00, '2025-03-29 06:07:10', 'Add Balance'),
+(71, 2, 54000.00, 505.00, 'money_transfer', 53495.00, '2025-03-29 06:09:04', 'Remove Balance'),
+(72, 2, 53495.00, 201.00, 'account_opening', 53294.00, '2025-03-29 06:11:15', 'Remove Balance'),
+(73, 2, 53294.00, 500.00, 'mobile transfer', 53794.00, '2025-03-29 06:12:20', 'Add Balance'),
+(74, 5, 0.00, 10000.00, 'Add Balance', 10000.00, '2025-03-29 12:45:34', NULL),
+(75, 5, 10000.00, 1000.00, 'fund transfer', 11000.00, '2025-03-29 12:53:17', 'Add Balance');
 
 -- --------------------------------------------------------
 
@@ -290,22 +376,6 @@ CREATE TABLE `sales` (
   `total_price` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `sales`
---
-
-INSERT INTO `sales` (`id`, `name`, `phone`, `paymentType`, `services`, `subtotal_price`, `total_price`, `created_at`) VALUES
-(1, '', NULL, '', '[{\"serviceId\":3,\"price\":300,\"commission_price\":80,\"amount\":220},{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 0.00, 340.00, '2025-02-11 12:12:00'),
-(2, '', NULL, '', '[{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 0.00, 120.00, '2025-02-12 05:39:18'),
-(3, '', NULL, '', '[{\"serviceId\":1,\"price\":150,\"commission_price\":30,\"amount\":120}]', 0.00, 120.00, '2025-02-14 14:44:08'),
-(4, '', NULL, '', '[{\"serviceId\":1,\"portalId\":1,\"price\":150,\"commission_price\":30,\"amount\":120},{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220},{\"serviceId\":4,\"portalId\":3,\"price\":200,\"commission_price\":50,\"amount\":150}]', 0.00, 490.00, '2025-02-18 05:19:53'),
-(5, '', NULL, '', '[{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220}]', 0.00, 220.00, '2025-02-18 05:22:52'),
-(6, '', NULL, '', '[{\"serviceId\":3,\"portalId\":2,\"price\":300,\"commission_price\":80,\"amount\":220}]', 0.00, 220.00, '2025-02-18 05:27:30'),
-(7, '', NULL, '', '[{\"serviceId\":1,\"portalId\":1,\"description\":\"teet\",\"price\":150,\"commission_price\":30,\"subamount\":150,\"amount\":120}]', 150.00, 120.00, '2025-02-22 01:45:15'),
-(8, 'test', '', '', '[{\"serviceId\":4,\"portalId\":3,\"description\":\"test\",\"price\":200,\"commission_price\":50,\"subamount\":200,\"amount\":150}]', 200.00, 150.00, '2025-02-22 01:58:03'),
-(9, 'testdiscount', '1010101010', 'Cash', '[{\"serviceId\":3,\"portalId\":2,\"description\":null,\"price\":300,\"discount\":40,\"commission_price\":80,\"subamount\":300,\"amount\":220}]', 260.00, 220.00, '2025-03-04 14:59:52'),
-(10, 'ds', '1010201020', 'Cash', '[{\"serviceId\":1,\"portalId\":1,\"description\":\"test\",\"price\":150,\"discount\":10,\"commission_price\":20,\"subamount\":150,\"amount\":130},{\"serviceId\":4,\"portalId\":3,\"description\":\"test\",\"price\":200,\"discount\":20,\"commission_price\":30,\"subamount\":200,\"amount\":170}]', 320.00, 300.00, '2025-03-07 16:52:12');
 
 -- --------------------------------------------------------
 
@@ -329,7 +399,23 @@ CREATE TABLE `services` (
 INSERT INTO `services` (`id`, `portalId`, `service_name`, `price`, `commission_price`, `created_at`) VALUES
 (1, 1, 'Pan card', 150.00, 30.00, '2025-02-11 07:06:13'),
 (3, 2, 'aadhar card', 300.00, 80.00, '2025-02-11 10:56:09'),
-(4, 3, 'rasan card', 200.00, 50.00, '2025-02-17 05:05:51');
+(4, 3, 'rasan card', 200.00, 50.00, '2025-02-17 05:05:51'),
+(5, 1, 'test', 150.00, 43.00, '2025-03-17 04:52:04');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscriptions`
+--
+
+CREATE TABLE `subscriptions` (
+  `id` int(11) NOT NULL,
+  `portalId` int(11) NOT NULL,
+  `transactionId` varchar(255) NOT NULL,
+  `amount` int(11) NOT NULL,
+  `role` enum('Admin','User','Manager') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -352,7 +438,7 @@ CREATE TABLE `vendor` (
 
 INSERT INTO `vendor` (`id`, `name`, `phone`, `main_balance`, `virtual_balance`, `created_at`) VALUES
 (1, 'krupalsinh', '7600230620', 2510.00, 2510.00, '2025-03-03 05:14:22'),
-(4, 'Ajitsinh', '9924560775', 16000.00, 14000.00, '2025-03-04 13:53:32');
+(4, 'Ajitsinh', '9924560775', 11000.00, 11000.00, '2025-03-04 13:53:32');
 
 -- --------------------------------------------------------
 
@@ -371,17 +457,6 @@ CREATE TABLE `vendor_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `vendor_logs`
---
-
-INSERT INTO `vendor_logs` (`id`, `vendor_id`, `before_balance`, `balance`, `type`, `after_balance`, `createdAt`) VALUES
-(1, 4, 0.00, 15000.00, 'Add Balance', 15000.00, '2025-03-04 13:53:32'),
-(2, 4, 15000.00, 1000.00, 'Add Balance', 16000.00, '2025-03-04 08:32:00'),
-(3, 4, 16000.00, 2000.00, 'Remove Virtual Balance', 14000.00, '2025-03-04 08:39:49'),
-(4, 1, 5045.00, 1000.00, 'Add Balance', 6045.00, '2025-03-04 08:49:27'),
-(5, 1, 3015.00, 505.00, 'Remove Money Transfer', 2510.00, '2025-03-07 17:30:54');
-
---
 -- Indexes for dumped tables
 --
 
@@ -392,10 +467,25 @@ ALTER TABLE `aepsmoneytransfer`
   ADD PRIMARY KEY (`TransferID`);
 
 --
+-- Indexes for table `cashback`
+--
+ALTER TABLE `cashback`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `commission`
 --
 ALTER TABLE `commission`
   ADD PRIMARY KEY (`CommissionID`);
+
+--
+-- Indexes for table `fundtransfer`
+--
+ALTER TABLE `fundtransfer`
+  ADD PRIMARY KEY (`TransferID`),
+  ADD UNIQUE KEY `TransactionNo` (`TransactionNo`),
+  ADD KEY `portalId` (`portalId`),
+  ADD KEY `beneficiaryUID` (`beneficiaryUID`);
 
 --
 -- Indexes for table `login`
@@ -403,6 +493,12 @@ ALTER TABLE `commission`
 ALTER TABLE `login`
   ADD PRIMARY KEY (`login_id`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `mobiletransfer`
+--
+ALTER TABLE `mobiletransfer`
+  ADD PRIMARY KEY (`TransferID`);
 
 --
 -- Indexes for table `moneytransfer`
@@ -435,6 +531,13 @@ ALTER TABLE `services`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `portalId` (`portalId`);
+
+--
 -- Indexes for table `vendor`
 --
 ALTER TABLE `vendor`
@@ -454,13 +557,25 @@ ALTER TABLE `vendor_logs`
 -- AUTO_INCREMENT for table `aepsmoneytransfer`
 --
 ALTER TABLE `aepsmoneytransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `cashback`
+--
+ALTER TABLE `cashback`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `commission`
 --
 ALTER TABLE `commission`
-  MODIFY `CommissionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `CommissionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
+-- AUTO_INCREMENT for table `fundtransfer`
+--
+ALTER TABLE `fundtransfer`
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `login`
@@ -469,34 +584,46 @@ ALTER TABLE `login`
   MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `mobiletransfer`
+--
+ALTER TABLE `mobiletransfer`
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `moneytransfer`
 --
 ALTER TABLE `moneytransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `portals`
 --
 ALTER TABLE `portals`
-  MODIFY `PortalID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `PortalID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `portal_logs`
 --
 ALTER TABLE `portal_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `vendor`
@@ -508,7 +635,17 @@ ALTER TABLE `vendor`
 -- AUTO_INCREMENT for table `vendor_logs`
 --
 ALTER TABLE `vendor_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  ADD CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`portalId`) REFERENCES `login` (`login_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

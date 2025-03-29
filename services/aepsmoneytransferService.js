@@ -4,13 +4,15 @@ const dbconnection = require('../config/database');
 const addMoneyTransfer = async (transferData) => {
     const query = `
         INSERT INTO aepsmoneytransfer 
-        (portalId, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
+        (portalId, VendorID, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
         Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, 
-        Extra, TransactionType, OtherType, OtherName)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        Extra, TransactionType, OtherType, OtherName, passbookIssue, HighlightEntry,
+        PendingAmount, ReceivedAmount, AOB)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
+        transferData.VendorID,
         transferData.ACNo,
         transferData.LastName || null,
         transferData.TransactionDate,
@@ -30,6 +32,11 @@ const addMoneyTransfer = async (transferData) => {
         transferData.TransactionType || null,
         transferData.OtherType || null,
         transferData.OtherName || null,
+        transferData.passbookIssue || '',
+        transferData.HighlightEntry || '',
+        transferData.PendingAmount || 0.00,
+        transferData.ReceivedAmount || 0.00,
+        transferData.AOB || 0.00,
     ];
 
     return new Promise((resolve, reject) => {
@@ -44,14 +51,16 @@ const addMoneyTransfer = async (transferData) => {
 const updateMoneyTransfer = async (transferId, transferData) => {
     const query = `
         UPDATE aepsmoneytransfer 
-        SET portalId = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
+        SET portalId = ?, VendorID = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
         Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?,
-        Extra = ?, TransactionType = ?, OtherType = ?, OtherName = ? 
+        Extra = ?, TransactionType = ?, OtherType = ?, OtherName = ?,
+        passbookIssue = ?, HighlightEntry = ?, PendingAmount = ?, ReceivedAmount = ?, AOB = ?
         WHERE TransferID = ?`;
 
     const values = [
         transferData.portalId,
+        transferData.VendorID,
         transferData.ACNo,
         transferData.LastName || null,
         transferData.TransactionDate,
@@ -71,6 +80,11 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.TransactionType || null,
         transferData.OtherType || null,
         transferData.OtherName || null,
+        transferData.passbookIssue || '',
+        transferData.HighlightEntry || '',
+        transferData.PendingAmount || 0.00,
+        transferData.ReceivedAmount || 0.00,
+        transferData.AOB || 0.00,
         transferId
     ];
 
@@ -90,7 +104,8 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Step 1: Get TotalCash and portalId from moneytransfer table
         const query1 = `
-            SELECT CollectionAmt, TransactionType, OtherType, portalId
+            SELECT CollectionAmt, TransactionType, OtherType,
+            portalId, AOB, Extra
             FROM aepsmoneytransfer
             WHERE TransferID = ?`;
 
@@ -109,8 +124,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        const { CollectionAmt, TransactionType, OtherType, portalId } = result1;
-        console.log('CollectionAmt:', CollectionAmt, 'TransactionType:', TransactionType, 'OtherType:', OtherType, 'portalId:', portalId);
+        const { CollectionAmt, TransactionType, OtherType, portalId, AOB, Extra } = result1;
 
         // Step 2: Get the current balance from the portals table
         const query2 = `
@@ -145,20 +159,24 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         let newBalance; // Declare outside to ensure it's available
         let transactionTypeLabel = ''; // Dynamic transaction type
 
-        if (TransactionType === 'aeps_withdrawal') {
-            newBalance = balance + CollectionAmt;
+        if (TransactionType === 'aeps_withdrawal' || TransactionType === 'cif_ac_wid' || TransactionType === 'atm_ac_wid') {
+            newBalance = balance + (CollectionAmt - Extra);
             transactionTypeLabel = 'Add Balance';
         }
-        else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening') {
-            newBalance = balance - CollectionAmt;
+        else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening' || TransactionType === 'cif_ac_dip' || TransactionType === 'atm_ac_dip') {
+            if (TransactionType === 'account_opening') {
+                newBalance = balance - AOB;
+            } else {
+                newBalance = balance - (CollectionAmt - Extra);
+            }
             transactionTypeLabel = 'Remove Balance';
         }
         else if (TransactionType === 'other') {
             if (OtherType === 'debit') {
-                newBalance = balance - CollectionAmt;
+                newBalance = balance - (CollectionAmt - Extra);
                 transactionTypeLabel = 'Remove Balance';
             } else {
-                newBalance = balance + CollectionAmt;
+                newBalance = balance + (CollectionAmt - Extra);
                 transactionTypeLabel = 'Add Balance';
             }
         }
@@ -167,9 +185,9 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const logData = {
             portalId: portalId,
             beforeBalance: balance, // Initial balance before any transaction
-            balance: CollectionAmt,
-            type: transactionTypeLabel, // Dynamic transaction type
-            transactionType: TransactionType,
+            balance: AOB > 0 ? AOB : (CollectionAmt - Extra),
+            type: TransactionType, // Dynamic transaction type
+            transactionType: transactionTypeLabel,
             afterBalance: newBalance,
             createdAt: new Date()
         };
@@ -275,9 +293,12 @@ const getMoneyTransferById = async (transferId) => {
 // Get all money transfers
 const getAllMoneyTransfers = async (fromDate, toDate, portalId) => {
     let query = `
-    SELECT aepsmoneytransfer.*, portals.Name AS portalName
+    SELECT aepsmoneytransfer.*,
+    portals.Name AS portalName,
+    COALESCE(vendor.name, 'N/A') AS vendorName  -- Handle NULL values
     FROM aepsmoneytransfer 
     JOIN portals ON aepsmoneytransfer.portalId = portals.PortalID
+    LEFT JOIN vendor ON aepsmoneytransfer.VendorID = vendor.id
     `;
 
     const queryParams = [];

@@ -26,6 +26,10 @@ const aepsRoutes = require('./routes/aepsmoneytransferRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
 const servicesRoutes = require('./routes/services.routes');
 const salesRoutes = require('./routes/salesRoutes');
+const cashbackRoutes = require("./routes/cashbackRoutes");
+const mobileTransferRoutes = require("./routes/mobileTransferRoutes");
+const fundTransferRoutes = require("./routes/fundTransferRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -37,6 +41,10 @@ app.use('/api/aeps', aepsRoutes);
 app.use('/api/user', vendorRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/sales', salesRoutes);
+app.use("/api/cashback", cashbackRoutes);
+app.use("/api/mobileTransfer", mobileTransferRoutes);
+app.use("/api/fundTransfer", fundTransferRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

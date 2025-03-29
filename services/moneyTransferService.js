@@ -6,8 +6,8 @@ const addMoneyTransfer = async (transferData) => {
         INSERT INTO moneytransfer 
         (portalId, VendorID, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
         Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, Discount, FixedAmt, 
-        BankCharge, Extra, BankDeposit, CustDeposit)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        BankCharge, Extra, BankDeposit, CustDeposit, comments , self, HighlightEntry)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
@@ -32,7 +32,10 @@ const addMoneyTransfer = async (transferData) => {
         transferData.BankCharge || 0.00,
         transferData.Extra || 0.00,
         transferData.BankDeposit || 0.00,
-        transferData.CustDeposit || 0.00
+        transferData.CustDeposit || 0.00,
+        transferData.comments || '',
+        transferData.self || '',
+        transferData.HighlightEntry || '',
     ];
 
     return new Promise((resolve, reject) => {
@@ -50,7 +53,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         SET portalId = ?, VendorID = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
         Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, Discount = ?, FixedAmt = ?, BankCharge = ?,
-        Extra = ?, BankDeposit = ?, CustDeposit = ? 
+        Extra = ?, BankDeposit = ?, CustDeposit = ?, comments = ?, self = ?, HighlightEntry = ?
         WHERE TransferID = ?`;
 
     const values = [
@@ -77,6 +80,9 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.Extra || 0.00,
         transferData.BankDeposit || 0.00,
         transferData.CustDeposit || 0.00,
+        transferData.comments || '',
+        transferData.self || '',
+        transferData.HighlightEntry || '',
         transferId
     ];
 
