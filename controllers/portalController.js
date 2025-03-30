@@ -96,6 +96,15 @@ const getPortalStats = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const getHighlightEntry = async (req, res) => {
+    try {
+        const result = await portalService.highlightEntry();
+        res.status(200).json(result);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 module.exports = {
     addPortal,
@@ -106,5 +115,6 @@ module.exports = {
     updateBalancePortal,
     getPortalStats,
     addPortalLog,
-    getPortalLogsById
+    getPortalLogsById,
+    getHighlightEntry
 };

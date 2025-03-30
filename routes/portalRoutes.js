@@ -12,5 +12,6 @@ router.get('/:id', portalController.getPortalById);     // Get a portal by ID
 router.get('/', portalController.getAllPortals);        // Get all portals
 router.get('/total/stats', portalController.getPortalStats);
 router.get('/:id/logs', portalController.getPortalLogsById); //view portal balance logs by id
+router.get('/highlightEntry/all', portalController.getHighlightEntry);
 
 module.exports = router;

@@ -193,6 +193,30 @@ const getPortalStats = async () => {
     });
 };
 
+const highlightEntry = async () => {
+    const queries = [
+        "SELECT * FROM moneytransfer WHERE HighlightEntry = '1'",
+        "SELECT * FROM aepsmoneytransfer WHERE HighlightEntry = '1'",
+        "SELECT * FROM mobiletransfer WHERE HighlightEntry = '1'",
+        "SELECT * FROM fundtransfer WHERE HighlightEntry = '1'"
+    ];
+
+    return new Promise((resolve, reject) => {
+        Promise.all(
+            queries.map(query =>
+                new Promise((res, rej) => {
+                    dbconnection.query(query, (error, result) => {
+                        if (error) return rej(error);
+                        res(result);
+                    });
+                })
+            )
+        )
+            .then(results => resolve(results.flat())) // Flatten the results into a single array
+            .catch(error => reject(error));
+    });
+};
+
 module.exports = {
     addPortal,
     updatePortal,
@@ -202,5 +226,6 @@ module.exports = {
     updateBalancePortal,
     getPortalStats,
     addPortalLog,
-    getPortalLogsById
+    getPortalLogsById,
+    highlightEntry
 };
