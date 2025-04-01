@@ -138,5 +138,19 @@ const addUserToLoginTable = (email, passwordHash, role) => {
         });
     });
 };
+const getUsers = async () => {
+    const query = "SELECT * FROM login WHERE role = 'User'";
+    return new Promise((resolve, reject) => {
+        dbconnection.query(query, (error, results) => {
+            if (error) return reject(error);
+            resolve(results);
+        });
+    });
+};
 
-module.exports = { userLogin, modifyPassword, createUserService };
+module.exports = {
+    userLogin,
+    modifyPassword,
+    createUserService,
+    getUsers
+};

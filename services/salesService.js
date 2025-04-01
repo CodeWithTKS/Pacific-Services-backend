@@ -95,16 +95,20 @@ const getSaleById = async (id) => {
 
 // Create a new sale
 const createSale = async (sale) => {
-    const queryInsertSale = `INSERT INTO sales (name, phone, paymentType, services, subtotal_price, total_price) VALUES (?, ?, ?, ?, ?, ?)`;
-    const queryUpdateBalance = `UPDATE portals SET Balance = Balance - ? WHERE PortalID = ?`;
+    const queryInsertSale = `INSERT INTO sales (name, phone, paymentType, portalId, services, total_price,
+     UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const queryRemoveBalance = `UPDATE portals SET Balance = Balance - ? WHERE PortalID = ?`;
+    const queryAddBalance = `UPDATE portals SET Balance = Balance - ? WHERE PortalID = ?`;
     const queryGetBalance = `SELECT Balance FROM portals WHERE PortalID = ?`;
 
-    const { name, phone, paymentType, services, subtotal_price, total_price } = sale;
+    const { name, phone, paymentType, portalId, services, total_price,
+        UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType } = sale;
 
     try {
         // Step 1: Validate if all portals have sufficient balance
         for (const service of services) {
-            const { portalId, amount } = service;
+            const { portalId, purchase_price } = service;
             const result = await new Promise((resolve, reject) => {
                 db.query(queryGetBalance, [portalId], (error, results) => {
                     if (error) return reject(error);
@@ -113,14 +117,14 @@ const createSale = async (sale) => {
                 });
             });
 
-            if (result.Balance < amount) {
+            if (result.Balance < purchase_price) {
                 throw new Error(`Insufficient balance in portal ${portalId}`);
             }
         }
 
         // Step 2: Deduct balance and log transactions for each portal
         for (const service of services) {
-            const { portalId, amount } = service;
+            const { portalId, purchase_price } = service;
 
             // Get current balance
             const result = await new Promise((resolve, reject) => {
@@ -131,13 +135,13 @@ const createSale = async (sale) => {
             });
 
             const currentBalance = result.Balance;
-            const newBalance = currentBalance - amount;
+            const newBalance = currentBalance - purchase_price;
 
             // Log transaction
             const logData = {
                 portalId,
                 beforeBalance: currentBalance,
-                balance: amount,
+                balance: purchase_price,
                 type: 'Remove Balance',
                 transactionType: 'Services_Transfer',
                 afterBalance: newBalance,
@@ -148,16 +152,52 @@ const createSale = async (sale) => {
 
             // Update balance
             await new Promise((resolve, reject) => {
-                db.query(queryUpdateBalance, [amount, portalId], (error, results) => {
+                db.query(queryRemoveBalance, [purchase_price, portalId], (error, results) => {
                     if (error) return reject(error);
                     resolve(results);
                 });
             });
         }
 
-        // Step 3: Insert sale into the sales table
+        // Step 3: Handle Online Payment Type - Add total_price to portal balance and log transaction
+        if (paymentType === 'Online') {
+            const portalBalanceResult = await new Promise((resolve, reject) => {
+                db.query(queryGetBalance, [portalId], (error, results) => {
+                    if (error) return reject(error);
+                    resolve(results[0]);
+                });
+            });
+
+            const previousBalance = portalBalanceResult.Balance;
+            const updatedBalance = previousBalance + total_price;
+
+            // Update portal balance
+            await new Promise((resolve, reject) => {
+                db.query(queryAddBalance, [total_price, portalId], (error, results) => {
+                    if (error) return reject(error);
+                    resolve(results);
+                });
+            });
+
+            // Log transaction for Online Payment
+            const onlinePaymentLog = {
+                portalId,
+                beforeBalance: previousBalance,
+                balance: total_price,
+                type: 'Add Balance',
+                transactionType: 'Online_Payment',
+                afterBalance: updatedBalance,
+                createdAt: new Date()
+            };
+
+            await addPortalLog(onlinePaymentLog);
+        }
+
+        // Step 4: Insert sale into the sales table
         const saleResult = await new Promise((resolve, reject) => {
-            db.query(queryInsertSale, [name, phone, paymentType, JSON.stringify(services), subtotal_price, total_price], (error, results) => {
+            db.query(queryInsertSale, [name, phone, paymentType, portalId, JSON.stringify(services), total_price,
+                UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType
+            ], (error, results) => {
                 if (error) return reject(error);
                 resolve(results.insertId);
             });
@@ -284,11 +324,13 @@ const addPortalLog = async (logData) => {
 const updateSale = async (id, sale) => {
     const query = `
         UPDATE sales 
-        SET name = ?, phone = ?, paymentType = ?, services = ?, subtotal_price = ?, total_price = ? 
+        SET name = ?, phone = ?, paymentType = ?, services = ?, total_price = ?,
+        UID = ?, comments = ?, workStatus = ?, HighlightEntry = ?, PendingAmount = ?, ReceivedAmount = ?,
+        TransferType = ?
         WHERE id = ?`;
-    const { name, phone, paymentType, services, subtotal_price, total_price } = sale;
+    const { name, phone, paymentType, services, total_price, UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType } = sale;
     return new Promise((resolve, reject) => {
-        db.query(query, [name, phone, paymentType, JSON.stringify(services), total_price, subtotal_price, id], (error, results) => {
+        db.query(query, [name, phone, paymentType, JSON.stringify(services), total_price, UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType, id], (error, results) => {
             if (error) return reject(error);
             resolve(results.affectedRows > 0);
         });

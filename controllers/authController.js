@@ -46,6 +46,16 @@ const createUserHandler = async (req, res) => {
     }
 };
 
+const getUsers = async (req, res) => {
+    try {
+        const services = await authService.getUsers();
+        res.status(200).json(services);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 module.exports = {
-    userLogin, modifyPassword, createUserHandler
+    userLogin, modifyPassword,
+    createUserHandler, getUsers
 };

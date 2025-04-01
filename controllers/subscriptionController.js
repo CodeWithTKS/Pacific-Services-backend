@@ -26,12 +26,12 @@ exports.verifyPayment = (order_id, payment_id, signature) => {
 
 exports.storePayment = async (req, res) => {
     try {
-        const { portalId, transactionId, amount, role } = req.body;
+        const { userId, transactionId, amount, role } = req.body;
         const expiryDate = new Date();
         expiryDate.setMonth(expiryDate.getMonth() + 1); // 1-month validity
 
-        await subscriptionService.updateSubscriptionStatus(portalId, expiryDate);
-        await subscriptionService.storeTransaction(portalId, transactionId, amount, role);
+        await subscriptionService.updateSubscriptionStatus(userId, expiryDate);
+        await subscriptionService.storeTransaction(userId, transactionId, amount, role);
 
         res.json({ success: true, message: 'Subscription activated' });
     } catch (error) {

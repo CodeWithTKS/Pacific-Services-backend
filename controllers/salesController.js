@@ -4,8 +4,15 @@ const salesService = require('../services/salesService');
 // Create a new sale
 const createSale = async (req, res) => {
     try {
-        const { name, phone, paymentType, services, subtotal_price, total_price } = req.body;
-        const result = await salesService.createSale({ name, phone, paymentType, services, subtotal_price, total_price });
+        const { name, phone, paymentType, portalId, services, total_price,
+            UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount,
+            TransferType
+        } = req.body;
+        const result = await salesService.createSale({
+            name, phone, paymentType, portalId, services, total_price,
+            UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount,
+            TransferType
+        });
         res.status(201).json({ message: 'Sale created', id: result });
     } catch (error) {
         res.status(500).json({ error: 'Failed to create sale', details: error });
@@ -13,8 +20,8 @@ const createSale = async (req, res) => {
 };
 const createManualSale = async (req, res) => {
     try {
-        const { name, phone, paymentType, services, subtotal_price, total_price } = req.body;
-        const result = await salesService.createManualSale({ name, phone, paymentType, services, subtotal_price, total_price });
+        const { name, phone, paymentType, portalId, services, subtotal_price, total_price } = req.body;
+        const result = await salesService.createManualSale({ name, phone, paymentType, portalId, services, subtotal_price, total_price });
         res.status(201).json({ message: 'Sale created', id: result });
     } catch (error) {
         res.status(500).json({ error: 'Failed to create sale', details: error });
@@ -49,8 +56,8 @@ const getSaleById = async (req, res) => {
 // Update a sale
 const updateSale = async (req, res) => {
     try {
-        const { name, phone, paymentType, services, subtotal_price, total_price } = req.body;
-        const result = await salesService.updateSale(req.params.id, { name, phone, paymentType, services, subtotal_price, total_price });
+        const { name, phone, paymentType, portalId, services, total_price, UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType } = req.body;
+        const result = await salesService.updateSale(req.params.id, { name, phone, paymentType, portalId, services, total_price, UID, comments, workStatus, HighlightEntry, PendingAmount, ReceivedAmount, TransferType });
         if (result) {
             res.status(200).json({ message: 'Sale updated' });
         } else {
