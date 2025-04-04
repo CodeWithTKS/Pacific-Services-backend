@@ -30,6 +30,7 @@ const cashbackRoutes = require("./routes/cashbackRoutes");
 const mobileTransferRoutes = require("./routes/mobileTransferRoutes");
 const fundTransferRoutes = require("./routes/fundTransferRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
+const pancardsalesRoutes = require("./routes/pancardsalesRoutes");
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -45,6 +46,7 @@ app.use("/api/cashback", cashbackRoutes);
 app.use("/api/mobileTransfer", mobileTransferRoutes);
 app.use("/api/fundTransfer", fundTransferRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/pancard", pancardsalesRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

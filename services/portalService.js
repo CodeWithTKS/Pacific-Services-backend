@@ -199,7 +199,8 @@ const highlightEntry = async () => {
         "SELECT * FROM aepsmoneytransfer WHERE HighlightEntry = '1'",
         "SELECT * FROM mobiletransfer WHERE HighlightEntry = '1'",
         "SELECT * FROM fundtransfer WHERE HighlightEntry = '1'",
-        "SELECT * FROM sales WHERE HighlightEntry = '1'"
+        "SELECT * FROM sales WHERE HighlightEntry = '1'",
+        "SELECT * FROM pancardsales WHERE HighlightEntry = '1'",
     ];
 
     return new Promise((resolve, reject) => {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 29, 2025 at 02:25 PM
+-- Generation Time: Apr 01, 2025 at 07:25 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -180,7 +180,8 @@ CREATE TABLE `fundtransfer` (
 --
 
 INSERT INTO `fundtransfer` (`TransferID`, `TransactionNo`, `portalId`, `FirstName`, `LastName`, `TransactionDate`, `ContactNo`, `IFSCNo`, `customerUID`, `beneficiaryUID`, `TransactionType`, `TransactionCategory`, `Cash500`, `Cash100`, `Cash50`, `Cash20`, `Cash10`, `Cash5`, `Cash1`, `TotalCash`, `CollectionAmt`, `Extra`, `CreatedAt`, `HighlightEntry`) VALUES
-(1, 'benitest', '1', 'krupalsinh', '', '2025-03-29 06:46:18', '7600230620', 'dsd', '414141', '5', 'AEPS', 'Credit', 2, 0, 0, 1, 0, 0, 0, 1020.00, 1020.00, 20.00, '2025-03-29 12:16:59', 0);
+(1, 'benitest', '1', 'krupalsinh', '', '2025-03-29 06:46:18', '7600230620', 'dsd', '414141', '5', 'AEPS', 'Credit', 2, 0, 0, 1, 0, 0, 0, 1020.00, 1020.00, 20.00, '2025-03-29 12:16:59', 0),
+(2, 'kjkjk', '1', 'kkkk', '', '2025-03-31 04:26:26', '7600230620', '677f', '568798', '5', 'AEPS', 'Credit', 1, 0, 0, 1, 0, 0, 0, 520.00, 520.00, 20.00, '2025-03-31 09:57:08', 0);
 
 -- --------------------------------------------------------
 
@@ -204,7 +205,11 @@ CREATE TABLE `login` (
 --
 
 INSERT INTO `login` (`login_id`, `email`, `password`, `role`, `created_at`, `updated_at`, `subscription_status`, `subscription_expiry`) VALUES
-(1, 'user@example.com', '$2a$10$oyQMqq06ACQjgDsxriA1MuHb2QYDu2OXDs9I3jH7jZqEIaD4nGd3G', 'Admin', '2024-10-27 07:48:07', '2024-10-27 07:48:07', 'Pending', NULL);
+(1, 'user@example.com', '$2a$10$oyQMqq06ACQjgDsxriA1MuHb2QYDu2OXDs9I3jH7jZqEIaD4nGd3G', 'Admin', '2024-10-27 07:48:07', '2025-04-01 17:02:48', 'Active', '2025-04-03'),
+(2, 'operator@gmail.com', '$2a$10$ItffrfAZl8Q6H3NX15iIzu9RF8vn95ouv1j1YHjWR1j77tIt.1wMe', 'User', '2025-03-30 12:29:14', '2025-03-30 12:29:14', 'Pending', NULL),
+(3, 'admin123@gmail.com', '$2a$10$FuuRrey4iRQA7KnwVnsE/.fsb.p5G2pcVWV7LZe.cpwSRy4u7MeEm', 'User', '2025-03-31 02:57:24', '2025-03-31 03:34:08', 'Active', '2025-05-01'),
+(6, 'newpailot@gmail.com', '$2a$10$ZWd6teXK5frMhmVWQCipDuHaAMXwJncVxZ8/xJw7ebwAVV0D3gwN2', 'User', '2025-03-31 03:14:25', '2025-03-31 03:14:50', 'Active', '2025-05-01'),
+(7, 'laxman@gmail.com', '$2a$10$v3kYfViAO3ORCb6rVbuX6ecvG50AdPQM9S8gP1cQt8dpMhO2crhSa', 'User', '2025-03-31 10:18:54', '2025-03-31 10:19:41', 'Active', '2025-05-01');
 
 -- --------------------------------------------------------
 
@@ -318,11 +323,11 @@ CREATE TABLE `portals` (
 --
 
 INSERT INTO `portals` (`PortalID`, `Name`, `Code`, `ContactNo`, `ContactPerson`, `Email`, `ACNo`, `Balance`, `TransactionLimit`, `ServiceTax`, `TDSRate`, `OpeningBalanceDate`, `CreatedAt`) VALUES
-(1, 'SBI', 'SBI001', '7600230620', 'krupalsinh', NULL, '0001223551', 15077.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 10:49:23'),
+(1, 'SBI', 'SBI001', '7600230620', 'krupalsinh', NULL, '0001223551', 14507.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 10:49:23'),
 (2, 'AU Bank', 'AUBank45', '9998271995', 'Hetal', NULL, '78945641', 53794.00, 25200.00, 0, 0.00, '2025-01-02', '2025-01-03 14:46:27'),
 (3, 'HDFC', 'HDFC003', '7600230620', 'Bhagawan', NULL, '1011011010', 3061.00, 25200.00, 0, 0.00, '2025-01-07', '2025-01-05 06:27:36'),
-(4, 'SBI LAX', 'SBI', '8778788787', 'LAXM', NULL, '', 47000.00, 20240.00, 0, 0.00, '2025-03-28', '2025-03-27 08:37:11'),
-(5, 'beneficery', 'beni', '7600230620', 'krupal', NULL, '', 11000.00, 0.00, 0, 0.00, '2025-03-30', '2025-03-29 12:45:34');
+(4, 'SBI LAX', 'SBI', '8778788787', 'LAXM', NULL, '', 46053.00, 20240.00, 0, 0.00, '2025-03-28', '2025-03-27 08:37:11'),
+(5, 'beneficery', 'beni', '7600230620', 'krupal', NULL, '', 11200.00, 0.00, 0, 0.00, '2025-03-30', '2025-03-29 12:45:34');
 
 -- --------------------------------------------------------
 
@@ -358,7 +363,15 @@ INSERT INTO `portal_logs` (`id`, `portal_id`, `before_balance`, `balance`, `type
 (72, 2, 53495.00, 201.00, 'account_opening', 53294.00, '2025-03-29 06:11:15', 'Remove Balance'),
 (73, 2, 53294.00, 500.00, 'mobile transfer', 53794.00, '2025-03-29 06:12:20', 'Add Balance'),
 (74, 5, 0.00, 10000.00, 'Add Balance', 10000.00, '2025-03-29 12:45:34', NULL),
-(75, 5, 10000.00, 1000.00, 'fund transfer', 11000.00, '2025-03-29 12:53:17', 'Add Balance');
+(75, 5, 10000.00, 1000.00, 'fund transfer', 11000.00, '2025-03-29 12:53:17', 'Add Balance'),
+(77, 1, 15077.00, 280.00, 'Services_Transfer', 14797.00, '2025-03-30 11:14:26', 'Remove Balance'),
+(78, 1, 14797.00, 290.00, 'Services_Transfer', 14507.00, '2025-03-30 11:18:48', 'Remove Balance'),
+(84, 5, 11000.00, 500.00, 'fund transfer', 11500.00, '2025-03-31 09:57:31', 'Add Balance'),
+(87, 4, 47000.00, 290.00, 'Services_Transfer', 46710.00, '2025-03-31 10:04:11', 'Remove Balance'),
+(88, 4, 46710.00, 250.00, 'Services_Transfer', 46460.00, '2025-03-31 10:15:54', 'Remove Balance'),
+(89, 4, 46460.00, 300.00, 'Services_Transfer', 46160.00, '2025-03-31 13:33:11', 'Remove Balance'),
+(90, 5, 11500.00, 300.00, 'Online_Payment', 11800.00, '2025-03-31 13:33:11', 'Add Balance'),
+(94, 4, 46160.00, 107.00, 'Services_Transfer', 46053.00, '2025-04-01 17:15:49', 'Remove Balance');
 
 -- --------------------------------------------------------
 
@@ -370,12 +383,31 @@ CREATE TABLE `sales` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `phone` varchar(255) DEFAULT NULL,
+  `UID` varchar(50) DEFAULT NULL,
   `paymentType` varchar(255) NOT NULL,
+  `TransferType` varchar(50) DEFAULT NULL,
+  `portalId` int(11) DEFAULT NULL,
   `services` longtext NOT NULL,
-  `subtotal_price` decimal(10,2) NOT NULL,
   `total_price` decimal(10,2) NOT NULL,
+  `comments` varchar(50) DEFAULT NULL,
+  `workStatus` varchar(50) DEFAULT NULL,
+  `HighlightEntry` tinyint(1) NOT NULL,
+  `PendingAmount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `ReceivedAmount` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sales`
+--
+
+INSERT INTO `sales` (`id`, `name`, `phone`, `UID`, `paymentType`, `TransferType`, `portalId`, `services`, `total_price`, `comments`, `workStatus`, `HighlightEntry`, `PendingAmount`, `ReceivedAmount`, `created_at`) VALUES
+(13, 'krupalsinh', '7600230620', NULL, 'Online', NULL, NULL, '[{\"serviceId\":1,\"portalId\":1,\"price\":280,\"purchase_price\":150,\"discount\":10,\"description\":\"test\",\"commission_amount\":130}]', 280.00, NULL, NULL, 0, 0.00, 0.00, '2025-03-30 11:14:26'),
+(14, 'drashti', '7600230620', '323232', 'Cash', NULL, NULL, '[{\"serviceId\":1,\"portalId\":1,\"qty\":1,\"price\":250,\"purchase_price\":150,\"discount\":10,\"description\":\"test\",\"commission_amount\":100}]', 250.00, 'sds', 'Rejected', 1, 180.00, 130.00, '2025-03-30 11:18:48'),
+(15, 'test', '7600230620', '43434', 'Online', NULL, NULL, '[{\"serviceId\":7,\"portalId\":4,\"qty\":1,\"price\":290,\"purchase_price\":72,\"discount\":10,\"description\":\"tst\",\"commission_amount\":218}]', 290.00, 'sf', 'Pending', 0, 190.00, 100.00, '2025-03-31 10:04:11'),
+(16, 'CHANDAN SINGH', '987456123545', '', 'Online', NULL, NULL, '[{\"serviceId\":7,\"portalId\":4,\"qty\":1,\"price\":250,\"purchase_price\":72,\"discount\":0,\"description\":\"GHG\",\"commission_amount\":178}]', 250.00, 'NN', 'Pending', 1, 50.00, 200.00, '2025-03-31 10:15:54'),
+(17, 'yetst', '7474747474', '3233', 'Online', NULL, 5, '[{\"serviceId\":7,\"portalId\":4,\"qty\":1,\"price\":300,\"purchase_price\":72,\"discount\":0,\"description\":\"test\",\"commission_amount\":228}]', 300.00, 'rer', 'Pending', 0, 0.00, 300.00, '2025-03-31 13:33:11'),
+(18, 'test', '7474747474', '3232323', 'Cash', NULL, NULL, '[{\"serviceId\":6,\"portalId\":4,\"qty\":1,\"price\":300,\"purchase_price\":107,\"discount\":0,\"description\":null,\"commission_amount\":193}]', 300.00, 'test', 'Pending', 0, 0.00, 300.00, '2025-04-01 17:15:49');
 
 -- --------------------------------------------------------
 
@@ -387,8 +419,7 @@ CREATE TABLE `services` (
   `id` int(11) NOT NULL,
   `portalId` int(11) NOT NULL,
   `service_name` varchar(255) NOT NULL,
-  `price` decimal(10,2) DEFAULT NULL,
-  `commission_price` decimal(10,2) NOT NULL,
+  `purchase_price` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -396,11 +427,13 @@ CREATE TABLE `services` (
 -- Dumping data for table `services`
 --
 
-INSERT INTO `services` (`id`, `portalId`, `service_name`, `price`, `commission_price`, `created_at`) VALUES
-(1, 1, 'Pan card', 150.00, 30.00, '2025-02-11 07:06:13'),
-(3, 2, 'aadhar card', 300.00, 80.00, '2025-02-11 10:56:09'),
-(4, 3, 'rasan card', 200.00, 50.00, '2025-02-17 05:05:51'),
-(5, 1, 'test', 150.00, 43.00, '2025-03-17 04:52:04');
+INSERT INTO `services` (`id`, `portalId`, `service_name`, `purchase_price`, `created_at`) VALUES
+(1, 1, 'Pan card', 150.00, '2025-02-11 07:06:13'),
+(3, 2, 'aadhar card', 180.00, '2025-02-11 10:56:09'),
+(4, 3, 'rasan card', 50.00, '2025-02-17 05:05:51'),
+(5, 1, 'test', 43.00, '2025-03-17 04:52:04'),
+(6, 4, 'pancard new', 107.00, '2025-03-30 11:29:55'),
+(7, 4, 'new e pan', 72.00, '2025-03-30 11:30:18');
 
 -- --------------------------------------------------------
 
@@ -410,12 +443,21 @@ INSERT INTO `services` (`id`, `portalId`, `service_name`, `price`, `commission_p
 
 CREATE TABLE `subscriptions` (
   `id` int(11) NOT NULL,
-  `portalId` int(11) NOT NULL,
+  `userId` int(11) NOT NULL,
   `transactionId` varchar(255) NOT NULL,
   `amount` int(11) NOT NULL,
   `role` enum('Admin','User','Manager') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `subscriptions`
+--
+
+INSERT INTO `subscriptions` (`id`, `userId`, `transactionId`, `amount`, `role`, `created_at`) VALUES
+(1, 6, 'pay_QDFHG1xlx2eSXc', 25000, 'User', '2025-03-31 03:14:50'),
+(2, 3, 'pay_QDFbdMQeQ3LrEU', 25000, 'User', '2025-03-31 03:34:08'),
+(3, 7, 'pay_QDMW4ocEmAb2S8', 25000, 'User', '2025-03-31 10:19:41');
 
 -- --------------------------------------------------------
 
@@ -535,7 +577,7 @@ ALTER TABLE `services`
 --
 ALTER TABLE `subscriptions`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `portalId` (`portalId`);
+  ADD KEY `portalId` (`userId`);
 
 --
 -- Indexes for table `vendor`
@@ -575,13 +617,13 @@ ALTER TABLE `commission`
 -- AUTO_INCREMENT for table `fundtransfer`
 --
 ALTER TABLE `fundtransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `login`
 --
 ALTER TABLE `login`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `mobiletransfer`
@@ -605,25 +647,25 @@ ALTER TABLE `portals`
 -- AUTO_INCREMENT for table `portal_logs`
 --
 ALTER TABLE `portal_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `vendor`
@@ -645,7 +687,7 @@ ALTER TABLE `vendor_logs`
 -- Constraints for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  ADD CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`portalId`) REFERENCES `login` (`login_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `login` (`login_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
