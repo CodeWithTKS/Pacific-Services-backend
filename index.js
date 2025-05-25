@@ -31,6 +31,8 @@ const mobileTransferRoutes = require("./routes/mobileTransferRoutes");
 const fundTransferRoutes = require("./routes/fundTransferRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const pancardsalesRoutes = require("./routes/pancardsalesRoutes");
+// const summaryRoutes = require("./routes/summaryRoutes");
+const companyRoutes = require('./routes/companyRoutes');
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -47,7 +49,14 @@ app.use("/api/mobileTransfer", mobileTransferRoutes);
 app.use("/api/fundTransfer", fundTransferRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/pancard", pancardsalesRoutes);
+// app.use("/api/summary", summaryRoutes);
+app.use('/api/company', companyRoutes);
+app.set('trust proxy', true); // Trust x-forwarded-for header
 
+app.get('/', (req, res) => {
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+  res.send(`Client IP: ${clientIp}`);
+});
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

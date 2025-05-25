@@ -6,8 +6,8 @@ const addMoneyTransfer = async (transferData) => {
         INSERT INTO moneytransfer 
         (portalId, VendorID, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
         Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, Discount, FixedAmt, 
-        BankCharge, Extra, BankDeposit, CustDeposit, comments , self, HighlightEntry)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        BankCharge, Extra, BankDeposit, CustDeposit, comments , self, HighlightEntry, selfPortalId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
@@ -36,6 +36,7 @@ const addMoneyTransfer = async (transferData) => {
         transferData.comments || '',
         transferData.self || '',
         transferData.HighlightEntry || '',
+        transferData.selfPortalId || 0,
     ];
 
     return new Promise((resolve, reject) => {
@@ -53,7 +54,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         SET portalId = ?, VendorID = ?, ACNo = ?, LastName = ?, TransactionDate = ?, FirstName = ?, 
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
         Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?, Discount = ?, FixedAmt = ?, BankCharge = ?,
-        Extra = ?, BankDeposit = ?, CustDeposit = ?, comments = ?, self = ?, HighlightEntry = ?
+        Extra = ?, BankDeposit = ?, CustDeposit = ?, comments = ?, self = ?, HighlightEntry = ?, selfPortalId = ?
         WHERE TransferID = ?`;
 
     const values = [
@@ -83,6 +84,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.comments || '',
         transferData.self || '',
         transferData.HighlightEntry || '',
+        transferData.selfPortalId || 0,
         transferId
     ];
 
@@ -101,10 +103,9 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         console.log('TransactionNo:', TransactionNo);
 
         // Step 1: Get BankDeposit, portalId, and vendorID from moneytransfer table
-        const query1 = `
-            SELECT BankDeposit, portalId, vendorID
-            FROM moneytransfer
-            WHERE TransferID = ?`;
+        const query1 = `SELECT BankDeposit, CustDeposit, portalId, vendorID, selfPortalId, self
+                        FROM moneytransfer
+                        WHERE TransferID = ?`;
 
         const values1 = [TransferID];
 
@@ -237,6 +238,57 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         };
 
         await addPortalLog(portalLogData); // Log portal transaction
+
+        // Step 5.1: If selfPortalId > 0 and self is true, add CustDeposit to selfPortalId portal balance
+        if (result1.selfPortalId > 0 && result1.self === 1) {
+            const querySelfPortal = `SELECT balance FROM portals WHERE portalId = ?`;
+            const valuesSelfPortal = [result1.selfPortalId];
+
+            const resultSelfPortal = await new Promise((resolve, reject) => {
+                dbconnection.query(querySelfPortal, valuesSelfPortal, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.length === 0) {
+                        return reject(new Error('selfPortalId not found in portals table'));
+                    }
+                    resolve(results[0]);
+                });
+            });
+
+            const selfPortalOldBalance = resultSelfPortal.balance;
+            const selfPortalNewBalance = selfPortalOldBalance + result1.CustDeposit;
+
+            const updateSelfPortalBalance = `UPDATE portals SET balance = ? WHERE portalId = ?`;
+            const valuesUpdateSelfPortal = [selfPortalNewBalance, result1.selfPortalId];
+
+            await new Promise((resolve, reject) => {
+                dbconnection.query(updateSelfPortalBalance, valuesUpdateSelfPortal, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.affectedRows === 0) {
+                        return reject(new Error('selfPortalId not found or no rows affected'));
+                    }
+                    resolve();
+                });
+            });
+
+            // Log self portal credit using CustDeposit
+            const selfPortalLogData = {
+                portalId: result1.selfPortalId,
+                beforeBalance: selfPortalOldBalance,
+                balance: result1.CustDeposit,
+                type: 'Add Balance (Self)',
+                transactionType: 'money_transfer',
+                afterBalance: selfPortalNewBalance,
+                createdAt: new Date()
+            };
+
+            await addPortalLog(selfPortalLogData);
+        }
 
         // Step 6: Update the moneytransfer table with the new TransactionNo
         const query4 = `UPDATE moneytransfer SET TransactionNo = ? WHERE TransferID = ?`;

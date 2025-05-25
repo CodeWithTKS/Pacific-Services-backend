@@ -61,21 +61,24 @@ const addMobileTransfer = async (transferData) => {
     const {
         TransactionNo, portalId, FirstName, LastName, TransactionDate, ContactNo,
         TransferType, TransactionType, TransactionCategory, Cash500, Cash100, Cash50,
-        Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry
+        Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry,
+        selfPortalId, self
     } = transferData;
 
     const query = `
         INSERT INTO mobiletransfer 
         (TransactionNo, portalId, FirstName, LastName, TransactionDate, ContactNo, 
         TransferType, TransactionType, TransactionCategory, Cash500, Cash100, Cash50, 
-        Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry,
+        selfPortalId, self) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     return new Promise((resolve, reject) => {
         db.query(query,
             [TransactionNo, portalId, FirstName, LastName, TransactionDate, ContactNo,
                 TransferType, TransactionType, TransactionCategory, Cash500, Cash100, Cash50,
-                Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry],
+                Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry,
+                selfPortalId, self],
             (error, results) => {
                 if (error) return reject(error);
                 resolve({ TransferID: results.insertId, ...transferData });
@@ -89,21 +92,22 @@ const updateMobileTransfer = async (id, transferData) => {
     const {
         TransactionNo, portalId, FirstName, LastName, TransactionDate, ContactNo,
         TransferType, TransactionType, TransactionCategory, Cash500, Cash100, Cash50,
-        Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry
+        Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry,
+        selfPortalId, self
     } = transferData;
 
     const query = `
         UPDATE mobiletransfer SET 
         TransactionNo = ?, portalId = ?, FirstName = ?, LastName = ?, TransactionDate = ?, ContactNo = ?, 
         TransferType = ?, TransactionType = ?, TransactionCategory = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, 
-        Cash20 = ?, Cash10 = ?, Cash5 = ?, Cash1 = ?, TotalCash = ?, CollectionAmt = ?, Extra = ?, HighlightEntry = ? 
+        Cash20 = ?, Cash10 = ?, Cash5 = ?, Cash1 = ?, TotalCash = ?, CollectionAmt = ?, Extra = ?, HighlightEntry = ?, selfPortalId = ?, self = ?
         WHERE TransferID = ?`;
 
     return new Promise((resolve, reject) => {
         db.query(query,
             [TransactionNo, portalId, FirstName, LastName, TransactionDate, ContactNo,
                 TransferType, TransactionType, TransactionCategory, Cash500, Cash100, Cash50,
-                Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry, id],
+                Cash20, Cash10, Cash5, Cash1, TotalCash, CollectionAmt, Extra, HighlightEntry, selfPortalId, self, id],
             (error, results) => {
                 if (error) return reject(error);
                 resolve(results.affectedRows > 0);

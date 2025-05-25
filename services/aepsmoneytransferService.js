@@ -6,9 +6,9 @@ const addMoneyTransfer = async (transferData) => {
         INSERT INTO aepsmoneytransfer 
         (portalId, VendorID, ACNo, LastName, TransactionDate, FirstName, ContactNo, IFSCNo,
         Cash1, Cash500, Cash100, Cash50, Cash20, Cash10, Cash5, TotalCash, CollectionAmt, 
-        Extra, TransactionType, OtherType, OtherName, passbookIssue, HighlightEntry,
-        PendingAmount, ReceivedAmount, AOB)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        Extra, TransactionType, OtherType, OtherName, passbookIssue, HighlightEntry, 
+        PendingAmount, ReceivedAmount, AOB, selfPortalId, self)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         transferData.portalId,
@@ -37,6 +37,8 @@ const addMoneyTransfer = async (transferData) => {
         transferData.PendingAmount || 0.00,
         transferData.ReceivedAmount || 0.00,
         transferData.AOB || 0.00,
+        transferData.selfPortalId || 0,
+        transferData.self || '',
     ];
 
     return new Promise((resolve, reject) => {
@@ -55,7 +57,7 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         ContactNo = ?, IFSCNo = ?, Cash1 = ?, Cash500 = ?, Cash100 = ?, Cash50 = ?, Cash20 = ?, 
         Cash10 = ?, Cash5 = ?, TotalCash = ?, CollectionAmt = ?,
         Extra = ?, TransactionType = ?, OtherType = ?, OtherName = ?,
-        passbookIssue = ?, HighlightEntry = ?, PendingAmount = ?, ReceivedAmount = ?, AOB = ?
+        passbookIssue = ?, HighlightEntry = ?, PendingAmount = ?, ReceivedAmount = ?, AOB = ?, selfPortalId = ?, self = ?
         WHERE TransferID = ?`;
 
     const values = [
@@ -85,6 +87,8 @@ const updateMoneyTransfer = async (transferId, transferData) => {
         transferData.PendingAmount || 0.00,
         transferData.ReceivedAmount || 0.00,
         transferData.AOB || 0.00,
+        transferData.selfPortalId || 0,
+        transferData.self || '',
         transferId
     ];
 
@@ -102,10 +106,9 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         console.log('TransferID:', TransferID);
         console.log('TransactionNo:', TransactionNo);
 
-        // Step 1: Get TotalCash and portalId from moneytransfer table
+        // Step 1: Get all required data from aepsmoneytransfer
         const query1 = `
-            SELECT CollectionAmt, TransactionType, OtherType,
-            portalId, AOB, Extra
+            SELECT CollectionAmt, TransactionType, OtherType, portalId, AOB, Extra, self, selfPortalId
             FROM aepsmoneytransfer
             WHERE TransferID = ?`;
 
@@ -124,98 +127,167 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
         });
 
-        const { CollectionAmt, TransactionType, OtherType, portalId, AOB, Extra } = result1;
+        const { CollectionAmt, TransactionType, OtherType, portalId, AOB, Extra, self, selfPortalId } = result1;
 
-        // Step 2: Get the current balance from the portals table
-        const query2 = `
-            SELECT balance
-            FROM portals
-            WHERE portalId = ?`;
+        // If self == 1, perform balance adjustments between portalId and selfPortalId
+        if (self === 1) {
+            console.log('Self transaction detected.');
 
-        const values2 = [portalId];
+            // Fetch balances for both portalId and selfPortalId
+            const [mainPortalBalanceResult, selfPortalBalanceResult] = await Promise.all([
+                new Promise((resolve, reject) => {
+                    dbconnection.query('SELECT balance FROM portals WHERE portalId = ?', [portalId], (error, results) => {
+                        if (error) return reject(error);
+                        if (results.length === 0) return reject(new Error('Main portalId not found'));
+                        resolve(results[0]);
+                    });
+                }),
+                new Promise((resolve, reject) => {
+                    dbconnection.query('SELECT balance FROM portals WHERE portalId = ?', [selfPortalId], (error, results) => {
+                        if (error) return reject(error);
+                        if (results.length === 0) return reject(new Error('Self portalId not found'));
+                        resolve(results[0]);
+                    });
+                })
+            ]);
 
-        const result2 = await new Promise((resolve, reject) => {
-            dbconnection.query(query2, values2, (error, results) => {
-                if (error) {
-                    console.error('Database Error:', error);
-                    return reject(error);
-                }
-                if (results.length === 0) {
-                    return reject(new Error('portalId not found in portals table'));
-                }
-                resolve(results[0]);
+            const mainPortalBalance = mainPortalBalanceResult.balance;
+            const selfPortalBalance = selfPortalBalanceResult.balance;
+
+            console.log('Main Portal Balance:', mainPortalBalance, 'Self Portal Balance:', selfPortalBalance);
+
+            // Calculate new balances
+            const newMainPortalBalance = mainPortalBalance - CollectionAmt;
+            const newSelfPortalBalance = selfPortalBalance + CollectionAmt;
+
+            // Add portal logs (optional if you have logging function)
+            await addPortalLog({
+                portalId: portalId,
+                beforeBalance: mainPortalBalance,
+                balance: CollectionAmt,
+                type: 'self_transfer_deduct',
+                transactionType: 'Remove Balance',
+                afterBalance: newMainPortalBalance,
+                createdAt: new Date()
             });
-        });
 
-        const { balance } = result2;
-        console.log('Current balance:', balance);
+            await addPortalLog({
+                portalId: selfPortalId,
+                beforeBalance: selfPortalBalance,
+                balance: CollectionAmt,
+                type: 'self_transfer_add',
+                transactionType: 'Add Balance',
+                afterBalance: newSelfPortalBalance,
+                createdAt: new Date()
+            });
 
-        // Step 3: Check if balance exists (is not null or undefined) and is sufficient to subtract CollectionAmt
-        if (balance === null || balance === undefined) {
-            return Promise.reject(new Error('No balance found in the portal'));
-        }
+            // Update both portal balances
+            await Promise.all([
+                new Promise((resolve, reject) => {
+                    dbconnection.query('UPDATE portals SET balance = ? WHERE portalId = ?', [newMainPortalBalance, portalId], (error, results) => {
+                        if (error) return reject(error);
+                        resolve();
+                    });
+                }),
+                new Promise((resolve, reject) => {
+                    dbconnection.query('UPDATE portals SET balance = ? WHERE portalId = ?', [newSelfPortalBalance, selfPortalId], (error, results) => {
+                        if (error) return reject(error);
+                        resolve();
+                    });
+                })
+            ]);
+        } 
+        else {
+            console.log('Normal transaction detected.');
 
-        // Step 4: Calculate the new balance and update it
-        let newBalance; // Declare outside to ensure it's available
-        let transactionTypeLabel = ''; // Dynamic transaction type
+            // Step 2: Get the current balance from the portals table
+            const query2 = `
+                SELECT balance
+                FROM portals
+                WHERE portalId = ?`;
 
-        if (TransactionType === 'aeps_withdrawal' || TransactionType === 'cif_ac_wid' || TransactionType === 'atm_ac_wid') {
-            newBalance = balance + (CollectionAmt - Extra);
-            transactionTypeLabel = 'Add Balance';
-        }
-        else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening' || TransactionType === 'cif_ac_dip' || TransactionType === 'atm_ac_dip') {
-            if (TransactionType === 'account_opening') {
-                newBalance = balance - AOB;
-            } else {
-                newBalance = balance - (CollectionAmt - Extra);
+            const values2 = [portalId];
+
+            const result2 = await new Promise((resolve, reject) => {
+                dbconnection.query(query2, values2, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.length === 0) {
+                        return reject(new Error('portalId not found in portals table'));
+                    }
+                    resolve(results[0]);
+                });
+            });
+
+            const { balance } = result2;
+            console.log('Current balance:', balance);
+
+            if (balance === null || balance === undefined) {
+                return Promise.reject(new Error('No balance found in the portal'));
             }
-            transactionTypeLabel = 'Remove Balance';
-        }
-        else if (TransactionType === 'other') {
-            if (OtherType === 'debit') {
-                newBalance = balance - (CollectionAmt - Extra);
-                transactionTypeLabel = 'Remove Balance';
-            } else {
+
+            let newBalance;
+            let transactionTypeLabel = '';
+
+            if (TransactionType === 'aeps_withdrawal' || TransactionType === 'cif_ac_wid' || TransactionType === 'atm_ac_wid') {
                 newBalance = balance + (CollectionAmt - Extra);
                 transactionTypeLabel = 'Add Balance';
             }
+            else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening' || TransactionType === 'cif_ac_dip' || TransactionType === 'atm_ac_dip') {
+                if (TransactionType === 'account_opening') {
+                    newBalance = balance - AOB;
+                } else {
+                    newBalance = balance - (CollectionAmt - Extra);
+                }
+                transactionTypeLabel = 'Remove Balance';
+            }
+            else if (TransactionType === 'other') {
+                if (OtherType === 'debit') {
+                    newBalance = balance - (CollectionAmt - Extra);
+                    transactionTypeLabel = 'Remove Balance';
+                } else {
+                    newBalance = balance + (CollectionAmt - Extra);
+                    transactionTypeLabel = 'Add Balance';
+                }
+            }
+
+            const logData = {
+                portalId: portalId,
+                beforeBalance: balance,
+                balance: AOB > 0 ? AOB : (CollectionAmt - Extra),
+                type: TransactionType,
+                transactionType: transactionTypeLabel,
+                afterBalance: newBalance,
+                createdAt: new Date()
+            };
+
+            await addPortalLog(logData);
+
+            // Update the portals table with the new balance
+            const query3 = `
+                UPDATE portals
+                SET balance = ?
+                WHERE portalId = ?`;
+
+            const values3 = [newBalance, portalId];
+
+            await new Promise((resolve, reject) => {
+                dbconnection.query(query3, values3, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.affectedRows === 0) {
+                        return reject(new Error('portalId not found or no rows affected'));
+                    }
+                    resolve();
+                });
+            });
         }
 
-        // Prepare log data
-        const logData = {
-            portalId: portalId,
-            beforeBalance: balance, // Initial balance before any transaction
-            balance: AOB > 0 ? AOB : (CollectionAmt - Extra),
-            type: TransactionType, // Dynamic transaction type
-            transactionType: transactionTypeLabel,
-            afterBalance: newBalance,
-            createdAt: new Date()
-        };
-
-        await addPortalLog(logData);
-
-        // Update the portals table with the new balance
-        const query3 = `
-                        UPDATE portals
-                        SET balance = ?
-                        WHERE portalId = ?`;
-
-        const values3 = [newBalance, portalId];
-
-        await new Promise((resolve, reject) => {
-            dbconnection.query(query3, values3, (error, results) => {
-                if (error) {
-                    console.error('Database Error:', error);
-                    return reject(error);
-                }
-                if (results.affectedRows === 0) {
-                    return reject(new Error('portalId not found or no rows affected'));
-                }
-                resolve();
-            });
-        });
-
-        // Step 5: Update the moneytransfer table with the new TransactionNo
+        // Step 5: Update the TransactionNo in aepsmoneytransfer
         const query4 = `
             UPDATE aepsmoneytransfer
             SET TransactionNo = ?
@@ -242,6 +314,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         throw error;
     }
 };
+
 // Portal Logs
 const addPortalLog = async (logData) => {
     const query = `
