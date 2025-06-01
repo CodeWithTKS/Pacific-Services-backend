@@ -216,7 +216,56 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         };
 
         await addPortalLog(portalLogData); // Log portal transaction
+        // Step 5.1: If selfPortalId > 0 and self is true, add CustDeposit to selfPortalId portal balance
+        if (result1.selfPortalId > 0 && result1.self === 1) {
+            const querySelfPortal = `SELECT balance FROM portals WHERE portalId = ?`;
+            const valuesSelfPortal = [result1.selfPortalId];
 
+            const resultSelfPortal = await new Promise((resolve, reject) => {
+                dbconnection.query(querySelfPortal, valuesSelfPortal, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.length === 0) {
+                        return reject(new Error('selfPortalId not found in portals table'));
+                    }
+                    resolve(results[0]);
+                });
+            });
+
+            const selfPortalOldBalance = resultSelfPortal.balance;
+            const selfPortalNewBalance = selfPortalOldBalance + result1.CustDeposit;
+
+            const updateSelfPortalBalance = `UPDATE portals SET balance = ? WHERE portalId = ?`;
+            const valuesUpdateSelfPortal = [selfPortalNewBalance, result1.selfPortalId];
+
+            await new Promise((resolve, reject) => {
+                dbconnection.query(updateSelfPortalBalance, valuesUpdateSelfPortal, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.affectedRows === 0) {
+                        return reject(new Error('selfPortalId not found or no rows affected'));
+                    }
+                    resolve();
+                });
+            });
+
+            // Log self portal credit using CustDeposit
+            const selfPortalLogData = {
+                portalId: result1.selfPortalId,
+                beforeBalance: selfPortalOldBalance,
+                balance: result1.CustDeposit,
+                type: 'Add Balance (Self)',
+                transactionType: 'mobile_transfer',
+                afterBalance: selfPortalNewBalance,
+                createdAt: new Date()
+            };
+
+            await addPortalLog(selfPortalLogData);
+        }
         // Step 6: Update the mobiletransfer table with the new TransactionNo
         const query4 = `UPDATE mobiletransfer SET TransactionNo = ? WHERE TransferID = ?`;
         const values4 = [TransactionNo, TransferID];

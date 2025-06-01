@@ -100,6 +100,60 @@ exports.createSale = async (sale) => {
             await addPortalLog(onlinePaymentLog);
         }
 
+        if (VendorID > 0) {
+            const queryVendor = `SELECT virtual_balance, main_balance FROM vendor WHERE id = ?`;
+            const valuesVendor = [VendorID];
+
+            const resultVendor = await new Promise((resolve, reject) => {
+                dbconnection.query(queryVendor, valuesVendor, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.length === 0) {
+                        return reject(new Error('vendorID not found in vendor table'));
+                    }
+                    resolve(results[0]);
+                });
+            });
+
+            let { virtual_balance, main_balance } = resultVendor;
+
+            // Deduct BankDeposit from both virtual_balance and main_balance
+            virtual_balance -= BankDeposit;
+            main_balance -= BankDeposit;
+
+            const queryUpdateVendor = `
+                UPDATE vendor
+                SET virtual_balance = ?, main_balance = ?
+                WHERE id = ?`;
+            const valuesUpdateVendor = [virtual_balance, main_balance, vendorID];
+
+            await new Promise((resolve, reject) => {
+                dbconnection.query(queryUpdateVendor, valuesUpdateVendor, (error, results) => {
+                    if (error) {
+                        console.error('Database Error:', error);
+                        return reject(error);
+                    }
+                    if (results.affectedRows === 0) {
+                        return reject(new Error('vendorID not found or no rows affected in vendor table'));
+                    }
+                    resolve();
+                });
+            });
+
+            // Log vendor transaction
+            const logData = {
+                vendorId: VendorID,
+                beforeBalance: resultVendor.main_balance,
+                balance: BankDeposit,
+                type: 'Remove Pan Transfer',
+                afterBalance: main_balance,
+                createdAt: new Date()
+            };
+
+            await addVendorLog(logData);
+        }
         // Step 4: Insert sale into the PanCardsales table
         const saleResult = await new Promise((resolve, reject) => {
             db.query(queryInsertSale, [name, phone, paymentType, portalId, JSON.stringify(services), total_price,
