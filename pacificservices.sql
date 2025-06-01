@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 05, 2025 at 05:01 AM
+-- Generation Time: Jun 01, 2025 at 06:55 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -60,12 +60,10 @@ CREATE TABLE `aepsmoneytransfer` (
   `PendingAmount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `ReceivedAmount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `HighlightEntry` tinyint(1) NOT NULL,
+  `selfPortalId` int(11) NOT NULL DEFAULT 0,
+  `self` tinyint(1) DEFAULT 0,
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `aepsmoneytransfer`
---
 
 -- --------------------------------------------------------
 
@@ -81,10 +79,6 @@ CREATE TABLE `cashback` (
   `date` datetime DEFAULT current_timestamp(),
   `type` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `cashback`
---
 
 -- --------------------------------------------------------
 
@@ -110,9 +104,46 @@ CREATE TABLE `commission` (
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `commission`
+-- Table structure for table `companies`
 --
+
+CREATE TABLE `companies` (
+  `id` int(11) NOT NULL,
+  `company_name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `company_type` enum('fintech_service','product_business') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `companies`
+--
+
+INSERT INTO `companies` (`id`, `company_name`, `email`, `phone`, `company_type`, `created_at`) VALUES
+(1, 'TKS ', 'tks@info.com', '7600230620', 'fintech_service', '2025-05-25 06:16:36');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_modules`
+--
+
+CREATE TABLE `company_modules` (
+  `id` int(11) NOT NULL,
+  `company_id` int(11) NOT NULL,
+  `module_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `company_modules`
+--
+
+INSERT INTO `company_modules` (`id`, `company_id`, `module_id`) VALUES
+(1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -147,10 +178,6 @@ CREATE TABLE `fundtransfer` (
   `HighlightEntry` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `fundtransfer`
---
-
 -- --------------------------------------------------------
 
 --
@@ -173,7 +200,7 @@ CREATE TABLE `login` (
 --
 
 INSERT INTO `login` (`login_id`, `email`, `password`, `role`, `created_at`, `updated_at`, `subscription_status`, `subscription_expiry`) VALUES
-(1, 'user@example.com', '$2a$10$oyQMqq06ACQjgDsxriA1MuHb2QYDu2OXDs9I3jH7jZqEIaD4nGd3G', 'Admin', '2024-10-27 07:48:07', '2025-04-04 17:33:37', 'Active', '2025-04-06');
+(1, 'user@example.com', '$2a$10$oyQMqq06ACQjgDsxriA1MuHb2QYDu2OXDs9I3jH7jZqEIaD4nGd3G', 'Admin', '2024-10-27 07:48:07', '2025-06-01 04:25:41', 'Active', '2025-06-30');
 
 -- --------------------------------------------------------
 
@@ -203,12 +230,29 @@ CREATE TABLE `mobiletransfer` (
   `CollectionAmt` decimal(15,2) DEFAULT 0.00,
   `Extra` decimal(15,2) DEFAULT 0.00,
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
-  `HighlightEntry` tinyint(4) NOT NULL
+  `HighlightEntry` tinyint(4) NOT NULL,
+  `selfPortalId` int(11) DEFAULT 0,
+  `self` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `modules`
+--
+
+CREATE TABLE `modules` (
+  `id` int(11) NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `view` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `mobiletransfer`
+-- Dumping data for table `modules`
 --
+
+INSERT INTO `modules` (`id`, `title`, `view`) VALUES
+(1, 'sales_dashboard', 'Dashboard');
 
 -- --------------------------------------------------------
 
@@ -245,12 +289,9 @@ CREATE TABLE `moneytransfer` (
   `comments` varchar(255) DEFAULT NULL,
   `self` tinyint(1) DEFAULT 0,
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
-  `HighlightEntry` tinyint(1) DEFAULT 0
+  `HighlightEntry` tinyint(1) DEFAULT 0,
+  `selfPortalId` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `moneytransfer`
---
 
 -- --------------------------------------------------------
 
@@ -277,10 +318,6 @@ CREATE TABLE `pancardsales` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `pancardsales`
---
-
 -- --------------------------------------------------------
 
 --
@@ -303,10 +340,6 @@ CREATE TABLE `portals` (
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `portals`
---
-
 -- --------------------------------------------------------
 
 --
@@ -323,10 +356,6 @@ CREATE TABLE `portal_logs` (
   `createdAt` timestamp NOT NULL DEFAULT current_timestamp(),
   `transactionType` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `portal_logs`
---
 
 -- --------------------------------------------------------
 
@@ -352,10 +381,6 @@ CREATE TABLE `sales` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `sales`
---
-
 -- --------------------------------------------------------
 
 --
@@ -369,10 +394,6 @@ CREATE TABLE `services` (
   `purchase_price` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `services`
---
 
 -- --------------------------------------------------------
 
@@ -389,10 +410,6 @@ CREATE TABLE `subscriptions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `subscriptions`
---
-
 -- --------------------------------------------------------
 
 --
@@ -408,11 +425,7 @@ CREATE TABLE `vendor` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `vendor`
---
-
---------------------------------------------------------
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `vendor_logs`
@@ -451,6 +464,18 @@ ALTER TABLE `commission`
   ADD PRIMARY KEY (`CommissionID`);
 
 --
+-- Indexes for table `companies`
+--
+ALTER TABLE `companies`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `company_modules`
+--
+ALTER TABLE `company_modules`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `fundtransfer`
 --
 ALTER TABLE `fundtransfer`
@@ -471,6 +496,12 @@ ALTER TABLE `login`
 --
 ALTER TABLE `mobiletransfer`
   ADD PRIMARY KEY (`TransferID`);
+
+--
+-- Indexes for table `modules`
+--
+ALTER TABLE `modules`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `moneytransfer`
@@ -535,91 +566,109 @@ ALTER TABLE `vendor_logs`
 -- AUTO_INCREMENT for table `aepsmoneytransfer`
 --
 ALTER TABLE `aepsmoneytransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `cashback`
 --
 ALTER TABLE `cashback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `commission`
 --
 ALTER TABLE `commission`
-  MODIFY `CommissionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `CommissionID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `companies`
+--
+ALTER TABLE `companies`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `company_modules`
+--
+ALTER TABLE `company_modules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `fundtransfer`
 --
 ALTER TABLE `fundtransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `login`
 --
 ALTER TABLE `login`
-  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `login_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `mobiletransfer`
 --
 ALTER TABLE `mobiletransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `modules`
+--
+ALTER TABLE `modules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `moneytransfer`
 --
 ALTER TABLE `moneytransfer`
-  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `TransferID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pancardsales`
 --
 ALTER TABLE `pancardsales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `portals`
 --
 ALTER TABLE `portals`
-  MODIFY `PortalID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `PortalID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `portal_logs`
 --
 ALTER TABLE `portal_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `vendor`
 --
 ALTER TABLE `vendor`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `vendor_logs`
 --
 ALTER TABLE `vendor_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
