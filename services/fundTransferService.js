@@ -181,10 +181,10 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         let newBalance;
 
         if (TransactionCategory === 'Credit') {
-            newBalance = balance + (CollectionAmt - Extra);
+            newBalance = balance + (CollectionAmt );
         }
         else {
-            newBalance = balance - (CollectionAmt - Extra);
+            newBalance = balance - (CollectionAmt );
         }
         const query3 = `UPDATE portals SET balance = ? WHERE portalId = ?`;
         const values3 = [newBalance, beneficiaryUID];
@@ -206,7 +206,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const portalLogData = {
             portalId: beneficiaryUID,
             beforeBalance: balance,
-            balance: (CollectionAmt - Extra),
+            balance: (CollectionAmt ),
             type: TransactionCategory === 'Credit' ? 'Add Balance' : 'Remove Balance',
             transactionType: 'fund transfer',
             afterBalance: newBalance,

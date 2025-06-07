@@ -232,23 +232,23 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             let transactionTypeLabel = '';
 
             if (TransactionType === 'aeps_withdrawal' || TransactionType === 'cif_ac_wid' || TransactionType === 'atm_ac_wid') {
-                newBalance = balance + (CollectionAmt - Extra);
+                newBalance = balance + (CollectionAmt );
                 transactionTypeLabel = 'Add Balance';
             }
             else if (TransactionType === 'aeps_deposit' || TransactionType === 'account_opening' || TransactionType === 'cif_ac_dip' || TransactionType === 'atm_ac_dip') {
                 if (TransactionType === 'account_opening') {
                     newBalance = balance - AOB;
                 } else {
-                    newBalance = balance - (CollectionAmt - Extra);
+                    newBalance = balance - (CollectionAmt );
                 }
                 transactionTypeLabel = 'Remove Balance';
             }
             else if (TransactionType === 'other') {
                 if (OtherType === 'debit') {
-                    newBalance = balance - (CollectionAmt - Extra);
+                    newBalance = balance - (CollectionAmt );
                     transactionTypeLabel = 'Remove Balance';
                 } else {
-                    newBalance = balance + (CollectionAmt - Extra);
+                    newBalance = balance + (CollectionAmt );
                     transactionTypeLabel = 'Add Balance';
                 }
             }
@@ -256,7 +256,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             const logData = {
                 portalId: portalId,
                 beforeBalance: balance,
-                balance: AOB > 0 ? AOB : (CollectionAmt - Extra),
+                balance: AOB > 0 ? AOB : (CollectionAmt ),
                 type: TransactionType,
                 transactionType: transactionTypeLabel,
                 afterBalance: newBalance,
