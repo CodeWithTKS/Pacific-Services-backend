@@ -135,7 +135,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
 
         // Step 1: Get CollectionAmt, portalId from mobiletransfer table
         const query1 = `
-            SELECT CollectionAmt, portalId, TransactionCategory, Extra
+            SELECT CollectionAmt, portalId, TransactionCategory, Extra, selfPortalId, self
             FROM mobiletransfer
             WHERE TransferID = ?`;
 
@@ -181,12 +181,19 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         }
         // Step 5: Update portal balance
         let newBalance;
-
-        if (TransactionCategory === 'Credit') {
-            newBalance = balance + (CollectionAmt );
-        }
-        else {
-            newBalance = balance - (CollectionAmt );
+        if (result1.self === 1) {
+            if (TransactionCategory === 'Credit') {
+                newBalance = balance - (CollectionAmt);
+            } else {
+                newBalance = balance + (CollectionAmt);
+            }
+        } else {
+            if (TransactionCategory === 'Credit') {
+                newBalance = balance + (CollectionAmt);
+            }
+            else {
+                newBalance = balance - (CollectionAmt);
+            }
         }
         const query3 = `UPDATE portals SET balance = ? WHERE portalId = ?`;
         const values3 = [newBalance, portalId];
@@ -208,8 +215,10 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
         const portalLogData = {
             portalId: portalId,
             beforeBalance: balance,
-            balance: (CollectionAmt ),
-            type: TransactionCategory === 'Credit' ? 'Add Balance' : 'Remove Balance',
+            balance: (CollectionAmt),
+            type: result1.self
+                ? (TransactionCategory === 'Credit' ? 'Remove Balance (Self)' : 'Add Balance (Self)')
+                : (TransactionCategory === 'Credit' ? 'Add Balance' : 'Remove Balance'),
             transactionType: 'mobile transfer',
             afterBalance: newBalance,
             createdAt: new Date()
@@ -222,7 +231,7 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             const valuesSelfPortal = [result1.selfPortalId];
 
             const resultSelfPortal = await new Promise((resolve, reject) => {
-                dbconnection.query(querySelfPortal, valuesSelfPortal, (error, results) => {
+                db.query(querySelfPortal, valuesSelfPortal, (error, results) => {
                     if (error) {
                         console.error('Database Error:', error);
                         return reject(error);
@@ -235,13 +244,13 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
             });
 
             const selfPortalOldBalance = resultSelfPortal.balance;
-            const selfPortalNewBalance = selfPortalOldBalance + result1.CustDeposit;
+            const selfPortalNewBalance = selfPortalOldBalance + result1.CollectionAmt;
 
             const updateSelfPortalBalance = `UPDATE portals SET balance = ? WHERE portalId = ?`;
             const valuesUpdateSelfPortal = [selfPortalNewBalance, result1.selfPortalId];
 
             await new Promise((resolve, reject) => {
-                dbconnection.query(updateSelfPortalBalance, valuesUpdateSelfPortal, (error, results) => {
+                db.query(updateSelfPortalBalance, valuesUpdateSelfPortal, (error, results) => {
                     if (error) {
                         console.error('Database Error:', error);
                         return reject(error);
@@ -253,11 +262,11 @@ const updateTransactionNo = async (TransferID, TransactionNo) => {
                 });
             });
 
-            // Log self portal credit using CustDeposit
+            // Log self portal credit using CollectionAmt
             const selfPortalLogData = {
                 portalId: result1.selfPortalId,
                 beforeBalance: selfPortalOldBalance,
-                balance: result1.CustDeposit,
+                balance: result1.CollectionAmt,
                 type: 'Add Balance (Self)',
                 transactionType: 'mobile_transfer',
                 afterBalance: selfPortalNewBalance,
